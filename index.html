@@ -1,238 +1,996 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>稳驰 VSCMG | 工业数字孪生控制台 V5.0</title>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --bg: #010409;
-            --panel: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
-            --accent: #3b82f6;
-            --orange: #f59e0b;
-            --green: #10b981;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Source Sans Pro', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* 顶部导航 */
-        header {
-            height: 60px; padding: 0 25px; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); background: rgba(1, 4, 9, 0.95); backdrop-filter: blur(20px); z-index: 100;
-        }
-
-        .nav-links { display: flex; gap: 30px; }
-        .nav-item { color: var(--text-dim); text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.3s; cursor: pointer; }
-        .nav-item:hover, .nav-item.active { color: var(--accent); }
-
-        /* 主体布局 - 关键：固定侧边栏宽度，防止挤压 */
-        .main-container { flex: 1; display: grid; grid-template-columns: 320px 1fr 350px; overflow: hidden; }
-
-        /* 通用侧边栏样式 */
-        .sidebar { 
-            background: var(--panel); 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            overflow-y: auto; 
-            border-right: 1px solid var(--border);
-        }
-        .sidebar-right { border-right: none; border-left: 1px solid var(--border); width: 350px; }
-
-        h3 { font-size: 11px; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-
-        /* 3D 视窗 */
-        .viewport { position: relative; background: radial-gradient(circle at 50% 50%, #111827 0%, #000 100%); }
-        model-viewer { 
-            width: 100%; height: 100%; 
-            filter: brightness(1.2) contrast(1.2) saturate(1.1); /* 金属感强化 */
-        }
-
-        /* 浮动按钮组 */
-        .action-bar { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
-        .btn { 
-            background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border); color: #fff; padding: 8px 16px; 
-            border-radius: 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s;
-        }
-        .btn.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
-
-        /* 交互输入框 */
-        .input-group { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
-        .field-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
-        input[type="number"], input[type="range"] { 
-            width: 100%; background: #000; border: 1px solid var(--border); padding: 10px; color: #fff; border-radius: 6px; outline: none; 
-        }
-        
-        /* 实时数据卡片 */
-        .data-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 15px; border-radius: 12px; }
-        .data-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .data-label { font-size: 11px; color: var(--text-dim); }
-        .data-value { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--accent); font-weight: bold; }
-        .val-hero { font-size: 28px; font-weight: 900; color: var(--orange); display: block; margin: 5px 0; }
-
-        /* 曲线图容器 */
-        .chart-box { height: 120px; background: #000; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; overflow: hidden; }
-
-        #infoCard { position: absolute; top: 75px; left: 20px; width: 280px; background: rgba(1, 4, 9, 0.9); border: 1px solid var(--orange); border-radius: 12px; padding: 20px; backdrop-filter: blur(15px); display: none; z-index: 5; }
-
-        /* 响应式调整 */
-        @media (max-width: 1200px) {
-            .main-container { grid-template-columns: 260px 1fr 280px; }
-            .val-hero { font-size: 22px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>稳驰 VSCMG | 工业级数字孪生控制台</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+:root {
+  --bg:       #03050d;
+  --bg2:      #060b18;
+  --panel:    rgba(8,18,40,0.85);
+  --border:   rgba(0,180,255,0.15);
+  --border-hi:rgba(0,180,255,0.5);
+  --accent:   #00b4ff;
+  --accent2:  #0066cc;
+  --orange:   #ff7a1a;
+  --green:    #00e5a0;
+  --red:      #ff3860;
+  --yellow:   #ffd700;
+  --text-main:#d8eeff;
+  --text-dim: #3a5a7a;
+  --text-mid: #6a9ab8;
+  --font-hud: 'Orbitron',monospace;
+  --font-mono:'Share Tech Mono',monospace;
+  --font-body:'DM Sans',sans-serif;
+  --glow:     0 0 18px rgba(0,180,255,0.35);
+  --glow-lg:  0 0 40px rgba(0,180,255,0.25);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--text-main);
+  height:100vh;overflow:hidden;display:flex;flex-direction:column;
+  font-family:var(--font-body);
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,180,255,0.015) 3px);
+}
+ 
+/* ── HEADER ── */
+header{
+  height:54px;padding:0 24px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(0,20,50,0.97) 0%,rgba(3,5,13,0.97) 100%);
+  backdrop-filter:blur(24px);z-index:200;position:relative;flex-shrink:0;
+}
+header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.5;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-text{font-family:var(--font-hud);font-size:16px;font-weight:900;letter-spacing:3px;}
+.logo-text span{color:var(--accent);}
+.badge{font-family:var(--font-mono);font-size:8px;padding:3px 7px;border-radius:3px;border:1px solid;letter-spacing:1.5px;}
+.badge-blue{border-color:var(--accent);color:var(--accent);background:rgba(0,180,255,0.06);animation:bpulse 3s ease-in-out infinite;}
+.badge-green{border-color:var(--green);color:var(--green);background:rgba(0,229,160,0.06);}
+@keyframes bpulse{0%,100%{box-shadow:0 0 4px rgba(0,180,255,0.2)}50%{box-shadow:0 0 12px rgba(0,180,255,0.6)}}
+.hdr-right{display:flex;align-items:center;gap:20px;}
+.sys-ok{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:9px;color:var(--green);}
+.sys-ok::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 1.8s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hdr-time{font-family:var(--font-hud);font-size:10px;color:var(--text-mid);letter-spacing:2px;}
+ 
+/* ── NAV TABS (top of viewport) ── */
+.nav-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(0,8,22,0.9);flex-shrink:0;}
+.nav-tab{
+  font-family:var(--font-hud);font-size:9px;letter-spacing:2px;
+  padding:10px 20px;cursor:pointer;border:none;background:transparent;
+  color:var(--text-dim);border-right:1px solid var(--border);
+  transition:all 0.25s;display:flex;align-items:center;gap:7px;
+}
+.nav-tab:hover{color:var(--accent);background:rgba(0,180,255,0.05);}
+.nav-tab.active{color:var(--accent);background:rgba(0,180,255,0.1);border-bottom:2px solid var(--accent);margin-bottom:-1px;}
+ 
+/* ── MAIN LAYOUT ── */
+.dashboard{flex:1;display:grid;grid-template-columns:290px 1fr 310px;overflow:hidden;}
+ 
+/* ── SIDEBAR ── */
+.sidebar{background:var(--panel);padding:16px 15px;display:flex;flex-direction:column;gap:13px;overflow-y:auto;overflow-x:hidden;}
+.sb-left{border-right:1px solid var(--border);}
+.sb-right{border-left:1px solid var(--border);}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+ 
+.sec-title{font-family:var(--font-hud);font-size:9px;letter-spacing:3px;color:var(--accent);
+  text-transform:uppercase;display:flex;align-items:center;gap:7px;
+  padding-bottom:9px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+ 
+.hud-card{background:rgba(0,10,30,0.6);border:1px solid var(--border);border-radius:7px;padding:14px;position:relative;overflow:hidden;}
+.hud-card::after{content:'';position:absolute;bottom:0;right:0;width:10px;height:10px;
+  border-right:1px solid var(--accent);border-bottom:1px solid var(--accent);opacity:0.35;}
+.hud-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity 0.4s;}
+.hud-card:hover::before{opacity:0.6;}
+ 
+.field-lbl{font-family:var(--font-mono);font-size:8px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.hud-input{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:4px;
+  padding:8px 11px;color:var(--accent);font-family:var(--font-hud);font-size:13px;outline:none;transition:border-color 0.3s,box-shadow 0.3s;}
+.hud-input:focus{border-color:var(--accent);box-shadow:var(--glow);}
+.hud-input-unit{font-family:var(--font-mono);font-size:8px;color:var(--text-dim);margin-top:4px;letter-spacing:1px;}
+ 
+/* disturbance options */
+.dist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px;}
+.dist-btn{
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:4px;
+  padding:9px 4px;font-family:var(--font-hud);font-size:9px;letter-spacing:1px;
+  color:var(--text-mid);cursor:pointer;text-align:center;transition:all 0.25s;
+}
+.dist-btn:hover{border-color:var(--accent);color:var(--accent);}
+.dist-btn.sel{background:rgba(0,180,255,0.12);border-color:var(--accent);color:var(--accent);box-shadow:var(--glow);}
+.dist-custom{margin-top:8px;}
+ 
+/* sim button */
+.sim-btn{
+  background:transparent;border:1px solid var(--accent);color:var(--accent);
+  padding:11px;border-radius:6px;cursor:pointer;font-family:var(--font-hud);font-size:9px;
+  letter-spacing:3px;width:100%;transition:all 0.3s;position:relative;overflow:hidden;
+}
+.sim-btn::before{content:'';position:absolute;inset:0;background:var(--accent);
+  transform:scaleX(0);transform-origin:left;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);z-index:0;}
+.sim-btn:hover::before{transform:scaleX(1);}
+.sim-btn:hover{color:#000;box-shadow:var(--glow);}
+.sim-btn span{position:relative;z-index:1;}
+ 
+/* telemetry values */
+.val-xl{font-family:var(--font-hud);font-size:26px;font-weight:900;color:var(--accent);
+  font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 18px rgba(0,180,255,0.4);transition:color 0.4s;}
+.val-xl.warn{color:var(--orange);text-shadow:0 0 18px rgba(255,122,26,0.4);}
+.val-xl.crit{color:var(--red);text-shadow:0 0 18px rgba(255,56,96,0.4);}
+.val-unit{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);}
+.bar-track{height:4px;background:rgba(0,0,0,0.6);border-radius:2px;margin-top:10px;overflow:hidden;border:1px solid var(--border);}
+.bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));
+  box-shadow:0 0 7px var(--accent);transition:width 0.6s cubic-bezier(0.16,1,0.3,1);}
+.bar-fill.warn{background:linear-gradient(90deg,#cc5500,var(--orange));box-shadow:0 0 7px var(--orange);}
+.bar-fill.crit{background:linear-gradient(90deg,#880020,var(--red));box-shadow:0 0 7px var(--red);}
+ 
+/* gyro rows */
+.gyro-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.gyro-track{flex:1;height:4px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
+.gyro-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
+.gyro-val{font-family:var(--font-hud);font-size:10px;font-variant-numeric:tabular-nums;min-width:52px;text-align:right;}
+.ax-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:2px;font-family:var(--font-hud);font-size:8px;font-weight:700;}
+.ax-x{background:rgba(255,56,96,0.2);color:var(--red);}
+.ax-y{background:rgba(0,229,160,0.2);color:var(--green);}
+.ax-z{background:rgba(0,180,255,0.2);color:var(--accent);}
+ 
+/* stat mini grid */
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.stat-mini{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:5px;padding:9px 11px;}
+.stat-mini-val{font-family:var(--font-hud);font-size:14px;font-weight:700;color:var(--orange);font-variant-numeric:tabular-nums;}
+.stat-mini-lbl{font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:3px;letter-spacing:1px;}
+ 
+/* confidence */
+.conf-panel{margin-top:auto;background:rgba(0,229,160,0.04);border:1px solid rgba(0,229,160,0.2);
+  border-radius:7px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;}
+.conf-lbl{font-family:var(--font-hud);font-size:8px;letter-spacing:2px;color:var(--green);}
+.conf-val{font-family:var(--font-hud);font-size:18px;font-weight:900;color:var(--green);text-shadow:0 0 12px rgba(0,229,160,0.5);}
+ 
+/* ── VIEWPORT ── */
+.viewport-container{position:relative;background:radial-gradient(ellipse at 50% 60%,#021630 0%,#03050d 70%);overflow:hidden;display:flex;flex-direction:column;}
+.vp-main{flex:1;position:relative;overflow:hidden;}
+.vp-main::before{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,180,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,255,0.03) 1px,transparent 1px);
+  background-size:50px 50px;pointer-events:none;z-index:1;}
+model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.05) contrast(1.15);}
+ 
+/* corner decorators */
+.hud-c{position:absolute;width:24px;height:24px;z-index:5;pointer-events:none;}
+.hud-c.tl{top:16px;left:16px;border-top:2px solid var(--accent);border-left:2px solid var(--accent);}
+.hud-c.tr{top:16px;right:16px;border-top:2px solid var(--accent);border-right:2px solid var(--accent);}
+.hud-c.bl{bottom:16px;left:16px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent);}
+.hud-c.br{bottom:16px;right:16px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent);}
+ 
+/* view toggle */
+.view-toggle{position:absolute;top:16px;left:16px;display:flex;gap:7px;z-index:10;}
+.view-btn{
+  background:rgba(3,8,20,0.85);border:1px solid var(--border);color:var(--text-mid);
+  padding:7px 14px;border-radius:4px;font-family:var(--font-hud);font-size:8px;letter-spacing:2px;
+  cursor:pointer;transition:all 0.25s;backdrop-filter:blur(10px);display:flex;align-items:center;gap:6px;
+}
+.view-btn:hover{border-color:var(--accent);color:var(--accent);}
+.view-btn.active{background:rgba(0,180,255,0.12);border-color:var(--accent);color:var(--accent);box-shadow:var(--glow);}
+ 
+/* part info card */
+.part-card{
+  position:absolute;top:72px;left:16px;width:260px;
+  background:rgba(2,8,22,0.96);border:1px solid var(--accent);border-radius:8px;
+  padding:18px;backdrop-filter:blur(20px);display:none;z-index:20;
+  box-shadow:var(--glow-lg);animation:cardIn 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.part-card-close{position:absolute;top:9px;right:11px;font-family:var(--font-mono);font-size:9px;color:var(--text-dim);cursor:pointer;}
+.part-card-close:hover{color:var(--accent);}
+ 
+/* hint bar */
+.hint-bar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:9px;color:var(--text-dim);
+  background:rgba(0,0,0,0.7);padding:5px 16px;border-radius:20px;border:1px solid var(--border);z-index:5;white-space:nowrap;}
+ 
+/* coordinate overlay */
+.coord-hud{position:absolute;bottom:46px;right:18px;font-family:var(--font-mono);font-size:8px;
+  color:var(--text-dim);letter-spacing:1px;z-index:5;line-height:1.9;pointer-events:none;}
+ 
+/* ══════════════════════════════════════
+   BOTTOM SECTION: 姿态仿真曲线图
+══════════════════════════════════════ */
+.sim-panel{
+  height:210px;border-top:1px solid var(--border);background:rgba(0,5,15,0.95);
+  padding:12px 16px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;
+}
+.sim-panel-head{display:flex;justify-content:space-between;align-items:center;}
+.sim-panel-title{font-family:var(--font-hud);font-size:9px;letter-spacing:3px;color:var(--accent);}
+.sim-legend{display:flex;gap:14px;}
+.leg-item{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:8px;color:var(--text-dim);}
+.leg-dot{width:8px;height:2px;border-radius:1px;}
+.sim-status{font-family:var(--font-mono);font-size:8px;letter-spacing:1px;}
+.sim-status.idle{color:var(--text-dim);}
+.sim-status.running{color:var(--yellow);animation:blink 0.8s ease-in-out infinite;}
+.sim-status.done{color:var(--green);}
+.chart-wrap{flex:1;position:relative;}
+#simCanvas{width:100%;height:100%;display:block;}
+ 
+/* ══════════════════════════════════════
+   DETAILS TAB — 零件展示面板
+══════════════════════════════════════ */
+.tab-content{display:none;flex:1;overflow:hidden;}
+.tab-content.active{display:flex;}
+ 
+/* viewport tab (default) */
+#tab-viewport{flex-direction:column;}
+ 
+/* details tab */
+#tab-details{flex-direction:column;background:var(--bg2);}
+.details-layout{flex:1;display:grid;grid-template-columns:220px 1fr 1fr 1fr;overflow:hidden;}
+.part-selector{border-right:1px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;gap:8px;background:var(--panel);}
+.part-sel-item{
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;
+  padding:12px 13px;cursor:pointer;transition:all 0.25s;
+}
+.part-sel-item:hover{border-color:var(--accent);background:rgba(0,180,255,0.07);}
+.part-sel-item.active{border-color:var(--orange);background:rgba(255,122,26,0.07);}
+.part-sel-name{font-family:var(--font-hud);font-size:10px;color:var(--text-main);margin-bottom:3px;}
+.part-sel-sub{font-family:var(--font-mono);font-size:8px;color:var(--text-dim);letter-spacing:1px;}
+.part-viewer-wrap{position:relative;background:radial-gradient(ellipse at 50% 50%,#021228 0%,#03050d 80%);}
+.part-viewer-wrap::before{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,180,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,255,0.03) 1px,transparent 1px);
+  background-size:30px 30px;pointer-events:none;}
+.part-model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.1) contrast(1.1);}
+.part-info-panel{border-left:1px solid var(--border);padding:20px 16px;overflow-y:auto;background:var(--panel);display:flex;flex-direction:column;gap:14px;}
+.part-info-panel::-webkit-scrollbar{width:3px;}
+.part-info-panel::-webkit-scrollbar-thumb{background:var(--border);}
+.pi-title{font-family:var(--font-hud);font-size:14px;font-weight:700;color:var(--orange);}
+.pi-sub{font-family:var(--font-mono);font-size:8px;color:var(--accent);letter-spacing:2px;margin-top:2px;}
+.pi-desc{font-family:var(--font-body);font-size:12px;color:var(--text-mid);line-height:1.7;}
+.pi-spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.pi-spec{background:rgba(0,0,0,0.45);border:1px solid var(--border);border-radius:5px;padding:9px;}
+.pi-spec-k{font-family:var(--font-mono);font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px;}
+.pi-spec-v{font-family:var(--font-hud);font-size:11px;color:var(--orange);}
+.pi-formula{background:rgba(0,0,0,0.5);border:1px solid rgba(0,180,255,0.2);border-radius:5px;padding:11px;}
+.pi-formula-title{font-family:var(--font-mono);font-size:8px;color:var(--accent);letter-spacing:1px;margin-bottom:6px;}
+.pi-formula-body{font-family:var(--font-mono);font-size:10px;color:var(--text-main);line-height:1.8;}
+ 
+/* waveform in sidebar */
+.wave-wrap{background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:7px;padding:10px;position:relative;}
+.wave-legend-sm{position:absolute;top:6px;right:8px;display:flex;gap:8px;}
+.leg-sm{display:flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:7px;color:var(--text-dim);}
+.leg-sm-dot{width:6px;height:6px;border-radius:50%;}
+ 
+/* RW grid */
+.rw-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.rw-item{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:5px;padding:9px;text-align:center;}
+.rw-lbl{font-family:var(--font-mono);font-size:7px;color:var(--text-dim);letter-spacing:1px;}
+.rw-val{font-family:var(--font-hud);font-size:15px;font-weight:700;margin:3px 0 5px;font-variant-numeric:tabular-nums;}
+.rw-arc{width:100%;height:26px;}
+ 
+/* loading poster */
+.model-loading{display:flex;align-items:center;justify-content:center;height:100%;
+  font-family:var(--font-hud);font-size:10px;color:var(--accent);letter-spacing:3px;gap:8px;}
+.spinner{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+ 
+/* scrollbar for part info */
+.part-info-panel::-webkit-scrollbar{width:3px;}
+ 
+/* fade transition */
+.vp-fade{animation:vpFade 0.35s ease;}
+@keyframes vpFade{from{opacity:0}to{opacity:1}}
+</style>
 </head>
 <body>
-
-    <header>
-        <div style="font-weight: 900; font-size: 20px; letter-spacing: -0.5px;">WENCHI <span style="color:var(--accent)">VSCMG</span></div>
-        <nav class="nav-links">
-            <a class="nav-item active">模型控制台</a>
-            <a class="nav-item">详细信息</a>
-            <a class="nav-item">仿真模拟第二阶段</a>
-        </nav>
-        <div style="font-size: 11px; color: var(--green);"><i class="fa-solid fa-bolt"></i> 系统已就绪</div>
-    </header>
-
-    <div class="main-container">
-        <aside class="sidebar">
-            <h3><i class="fa-solid fa-weight-hanging"></i> 负载与动力学</h3>
-            <div class="input-group">
-                <span class="field-label">输入负载载荷 LOAD (KG)</span>
-                <input type="number" id="massInput" value="75.0" step="0.5" oninput="updateSimulation()">
-            </div>
-
-            <div class="input-group">
-                <span class="field-label">外部干扰力矩 DISTURBANCE (N·M)</span>
-                <input type="range" id="distRange" min="0" max="150" value="45" oninput="updateSimulation()">
-                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; font-weight:bold; color:var(--accent);">
-                    <span>0</span>
-                    <span id="distVal">45 N·m</span>
-                    <span>150</span>
-                </div>
-            </div>
-
-            <button class="btn" style="width:100%; justify-content:center; background:var(--accent); margin-top:10px; font-weight:bold;" onclick="triggerPulse()">
-                <i class="fa-solid fa-play"></i> 执行瞬态仿真
-            </button>
-        </aside>
-
-        <main class="viewport">
-            <div class="action-bar">
-                <button id="btnModel" class="btn active" onclick="switchView('model')"><i class="fa-solid fa-cube"></i> 模型装配</button>
-                <button id="btnExplode" class="btn" onclick="switchView('explode')"><i class="fa-solid fa-layer-group"></i> 结构分解</button>
-            </div>
-
-            <div id="infoCard">
-                <h4 id="partTitle" style="color:var(--orange); margin-bottom:8px;">零件详情</h4>
-                <p id="partDesc" style="font-size:12px; color:var(--text-dim); line-height:1.6;"></p>
-                <div style="margin-top:15px; font-size:10px; color:var(--accent);">点击背景空白处返回</div>
-            </div>
-
-            <model-viewer 
-                id="viewer" 
-                src="model.glb" 
-                camera-controls 
-                auto-rotate 
-                shadow-intensity="2" 
-                environment-image="neutral"
-                exposure="1.4"
-                interaction-prompt="none">
-            </model-viewer>
-        </main>
-
-        <aside class="sidebar sidebar-right">
-            <h3><i class="fa-solid fa-gauge-high"></i> 姿态稳定曲线</h3>
-            <div class="chart-box">
-                <svg viewBox="0 0 200 80" width="100%" height="100%">
-                    <path id="stablePath" d="M0 40 Q 50 20 100 40 T 200 40" fill="none" stroke="#3b82f6" stroke-width="2" />
-                    <line x1="0" y1="40" x2="200" y2="40" stroke="rgba(255,255,255,0.1)" stroke-dasharray="4" />
-                </svg>
-            </div>
-
-            <h3><i class="fa-solid fa-compass"></i> 三轴陀螺仪实时数据</h3>
-            <div class="data-card">
-                <div class="data-row"><span class="data-label">X轴 倾斜角 (ROLL)</span><span class="data-value" id="gyroX">0.02°</span></div>
-                <div class="data-row"><span class="data-label">Y轴 俯仰角 (PITCH)</span><span class="data-value" id="gyroY">-0.01°</span></div>
-                <div class="data-row"><span class="data-label">Z轴 偏航角 (YAW)</span><span class="data-value" id="gyroZ">0.00°</span></div>
-            </div>
-
-            <h3><i class="fa-solid fa-microchip"></i> 核心控制器输出</h3>
-            <div class="data-card">
-                <span class="field-label">输出补偿力矩 (TORQUE)</span>
-                <span class="val-hero" id="torqueOut">12.85 <small style="font-size:12px;">N·m</small></span>
-                
-                <span class="field-label" style="margin-top:15px;">实时角速度 (VELOCITY)</span>
-                <span class="val-hero" id="velOut" style="color:var(--green);">0.012 <small style="font-size:12px;">rad/s</small></span>
-            </div>
-        </aside>
+ 
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="logo">
+    <div style="width:30px;height:30px;border:1.5px solid var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;box-shadow:var(--glow)">
+      <i class="fa-solid fa-satellite" style="font-size:13px;color:var(--accent)"></i>
     </div>
-
-    <script>
-        const viewer = document.getElementById('viewer');
-        const infoCard = document.getElementById('infoCard');
-
-        // 切换视图逻辑
-        function switchView(mode) {
-            const isExplode = mode === 'explode';
-            viewer.src = isExplode ? "model_exploded.glb" : "model.glb";
-            document.getElementById('btnExplode').classList.toggle('active', isExplode);
-            document.getElementById('btnModel').classList.toggle('active', !isExplode);
-            if(!isExplode) infoCard.style.display = 'none';
-        }
-
-        // 仿真交互逻辑
-        function updateSimulation() {
-            const mass = parseFloat(document.getElementById('massInput').value) || 0;
-            const dist = parseInt(document.getElementById('distRange').value);
-            document.getElementById('distVal').innerText = `${dist} N·m`;
-
-            // 模拟计算公式
-            const torque = (dist * 0.28 + mass * 0.04).toFixed(2);
-            const vel = (dist * 0.0003).toFixed(4);
-
-            // 更新 UI 数字
-            document.getElementById('torqueOut').innerHTML = `${torque} <small style="font-size:12px;">N·m</small>`;
-            document.getElementById('velOut').innerHTML = `${vel} <small style="font-size:12px;">rad/s</small>`;
-            
-            // 更新三轴数据微动
-            document.getElementById('gyroX').innerText = `${(Math.random()*0.05).toFixed(2)}°`;
-            document.getElementById('gyroY').innerText = `${((Math.random()-0.5)*0.03).toFixed(2)}°`;
-
-            // 更新曲线 (模拟稳定性)
-            const amplitude = dist / 5;
-            const path = `M0 40 Q 50 ${40 - amplitude} 100 40 T 200 40`;
-            document.getElementById('stablePath').setAttribute('d', path);
-        }
-
-        function triggerPulse() {
-            const path = document.getElementById('stablePath');
-            path.style.stroke = "#f59e0b";
-            setTimeout(() => { path.style.stroke = "#3b82f6"; }, 500);
-            updateSimulation();
-        }
-
-        // 零件点击（示例数据）
-        viewer.addEventListener('click', (ev) => {
-            if (!document.getElementById('btnExplode').classList.contains('active')) return;
-            const hit = viewer.sampleRenderedPixels(ev.clientX, ev.clientY);
-            if (ev.clientX > 400 && ev.clientX < 800) { // 模拟中心区域点击
-                document.getElementById('partTitle').innerText = "VSCMG 框架组件";
-                document.getElementById('partDesc').innerText = "高强度航空铝合金结构，支撑高速旋转飞轮，集成三轴MEMS传感器，实现毫秒级姿态响应。";
-                infoCard.style.display = 'block';
-            } else {
-                infoCard.style.display = 'none';
-            }
-        });
-
-        window.onload = updateSimulation;
-    </script>
+    <div class="logo-text">WENCHI <span>VSCMG</span></div>
+    <div class="badge badge-blue">DIGITAL TWIN v4.2</div>
+    <div class="badge badge-green">LIVE</div>
+  </div>
+  <div class="hdr-right">
+    <div class="sys-ok">ALL SYSTEMS NOMINAL</div>
+    <div class="hdr-time" id="headerTime">--:--:--</div>
+    <div style="font-family:var(--font-mono);font-size:8px;color:var(--text-dim);letter-spacing:2px">PRECISION DYNAMICS GCS</div>
+  </div>
+</header>
+ 
+<!-- ═══ NAV TABS ═══ -->
+<div class="nav-tabs">
+  <button class="nav-tab active" id="tab-btn-viewport" onclick="switchTab('viewport')">
+    <i class="fa-solid fa-cube"></i> 模型装配
+  </button>
+  <button class="nav-tab" id="tab-btn-explode" onclick="switchTab('explode')">
+    <i class="fa-solid fa-layer-group"></i> 结构分解
+  </button>
+  <button class="nav-tab" id="tab-btn-details" onclick="switchTab('details')">
+    <i class="fa-solid fa-microscope"></i> 详细信息与仿真模拟
+  </button>
+</div>
+ 
+<!-- ═══ DASHBOARD ═══ -->
+<div class="dashboard">
+ 
+  <!-- ── LEFT SIDEBAR ── -->
+  <aside class="sidebar sb-left">
+    <div class="sec-title"><i class="fa-solid fa-weight-hanging"></i> 负载参数</div>
+ 
+    <div class="hud-card">
+      <label class="field-lbl">系统负载质量 LOAD MASS</label>
+      <input type="number" id="mass" class="hud-input" value="5.5" min="1" max="200" step="0.1" oninput="onParamChange()">
+      <div class="hud-input-unit">KG &nbsp;·&nbsp; 范围：桌面 5.5 kg / 车载 55 kg</div>
+    </div>
+ 
+    <div class="hud-card">
+      <label class="field-lbl">系统转动惯量 MOMENT OF INERTIA</label>
+      <input type="number" id="inertia" class="hud-input" value="0.5" min="0.01" max="50" step="0.01" oninput="onParamChange()">
+      <div class="hud-input-unit">KG·M² &nbsp;·&nbsp; 桌面≈0.5 / 车载≈5.0</div>
+    </div>
+ 
+    <div class="hud-card">
+      <label class="field-lbl">飞轮转速 FLYWHEEL SPEED</label>
+      <input type="number" id="rpm" class="hud-input" value="3000" min="500" max="6000" step="100" oninput="onParamChange()">
+      <div class="hud-input-unit">RPM &nbsp;·&nbsp; 实验范围：1500 – 4000 rpm</div>
+    </div>
+ 
+    <div class="sec-title" style="margin-top:4px"><i class="fa-solid fa-bolt-lightning"></i> 外部干扰力矩</div>
+ 
+    <div class="hud-card">
+      <label class="field-lbl">初始倾斜角 INIT TILT ANGLE</label>
+      <div class="dist-grid">
+        <div class="dist-btn sel" data-angle="15" onclick="selAngle(this,15)">15°</div>
+        <div class="dist-btn" data-angle="25" onclick="selAngle(this,25)">25°</div>
+        <div class="dist-btn" data-angle="35" onclick="selAngle(this,35)">35°</div>
+      </div>
+    </div>
+ 
+    <div class="hud-card">
+      <label class="field-lbl">外部干扰力矩 DISTURBANCE</label>
+      <div class="dist-grid">
+        <div class="dist-btn sel" data-dist="0" onclick="selDist(this,0)">无干扰</div>
+        <div class="dist-btn" data-dist="10" onclick="selDist(this,10)">10 N·M</div>
+        <div class="dist-btn" data-dist="30" onclick="selDist(this,30)">30 N·M</div>
+        <div class="dist-btn" data-dist="50" onclick="selDist(this,50)">50 N·M</div>
+        <div class="dist-btn" data-dist="80" onclick="selDist(this,80)">80 N·M</div>
+        <div class="dist-btn" data-dist="custom" id="distCustomBtn" onclick="selDist(this,'custom')">自定义</div>
+      </div>
+      <div class="dist-custom" id="customDistWrap" style="display:none;margin-top:8px;">
+        <input type="number" id="customDist" class="hud-input" value="41" placeholder="输入 N·M">
+        <div class="hud-input-unit">N·M</div>
+      </div>
+    </div>
+ 
+    <button class="sim-btn" id="simBtn" onclick="runSim()"><span>⬢ &nbsp;运行仿真计算 &nbsp;⬢</span></button>
+ 
+    <div style="display:flex;gap:6px;">
+      <div id="modeChip" style="flex:1;background:rgba(0,180,255,0.06);border:1px solid var(--accent);border-radius:4px;padding:7px;font-family:var(--font-hud);font-size:8px;letter-spacing:2px;color:var(--accent);text-align:center">TRACKING MODE</div>
+      <div style="flex:1;background:rgba(0,229,160,0.04);border:1px solid rgba(0,229,160,0.2);border-radius:4px;padding:7px;font-family:var(--font-hud);font-size:8px;letter-spacing:2px;color:var(--green);text-align:center">CMG ACTIVE</div>
+    </div>
+  </aside>
+ 
+  <!-- ── VIEWPORT AREA ── -->
+  <main class="viewport-container">
+ 
+    <!-- TAB: 模型装配 / 结构分解 -->
+    <div class="tab-content active" id="tab-viewport" style="display:flex;">
+      <div class="vp-main" id="vpMain">
+        <div class="hud-c tl"></div><div class="hud-c tr"></div>
+        <div class="hud-c bl"></div><div class="hud-c br"></div>
+ 
+        <div class="view-toggle">
+          <!-- These are now just visual indicators, tab buttons handle switching -->
+        </div>
+ 
+        <!-- Part info popup (explode mode) -->
+        <div id="infoCard" class="part-card">
+          <span class="part-card-close" onclick="closeCard()">[ 关闭 ]</span>
+          <div style="font-family:var(--font-mono);font-size:7px;color:var(--accent);letter-spacing:2px;margin-bottom:5px">COMPONENT SPEC</div>
+          <div id="partTitle" style="font-family:var(--font-hud);font-size:14px;font-weight:700;color:var(--orange);margin-bottom:9px"></div>
+          <p id="partDesc" style="font-family:var(--font-body);font-size:11px;color:var(--text-mid);line-height:1.7;"></p>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:7px" id="partSpecGrid"></div>
+        </div>
+ 
+        <model-viewer id="mv"
+          src="model.glb" camera-controls auto-rotate
+          shadow-intensity="2" shadow-softness="0.5"
+          environment-image="neutral" exposure="1.4"
+          camera-orbit="45deg 75deg 105%"
+          interpolation-decay="200" interaction-prompt="none">
+          <div slot="poster" class="model-loading"><i class="fa-solid fa-spinner spinner"></i> LOADING...</div>
+        </model-viewer>
+ 
+        <!-- coord readout -->
+        <div class="coord-hud">
+          <div id="coordX">X: <span style="color:var(--red)">—</span></div>
+          <div id="coordY">Y: <span style="color:var(--green)">—</span></div>
+          <div id="coordZ">Z: <span style="color:var(--accent)">—</span></div>
+        </div>
+ 
+        <div class="hint-bar" id="hintBar">左键旋转 · 滚轮缩放 · 右键平移</div>
+      </div>
+ 
+      <!-- Simulation chart panel (bottom of viewport) -->
+      <div class="sim-panel">
+        <div class="sim-panel-head">
+          <div class="sim-panel-title"><i class="fa-solid fa-chart-area" style="margin-right:6px"></i>姿态稳定仿真曲线 &nbsp;·&nbsp; ATTITUDE STABILIZATION TRACE</div>
+          <div class="sim-legend">
+            <div class="leg-item"><div class="leg-dot" style="background:var(--orange)"></div>车身倾斜角 θ (°)</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--accent)"></div>万向节角速度 δ̇ (rad/s)</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>输出力矩 τ (N·M)</div>
+          </div>
+          <div class="sim-status idle" id="simStatus">AWAITING INPUT</div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="simCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- TAB: 详细信息与仿真模拟 -->
+    <div class="tab-content" id="tab-details">
+      <div class="details-layout">
+        <!-- Part selector -->
+        <div class="part-selector">
+          <div class="sec-title"><i class="fa-solid fa-list"></i> 零件列表</div>
+          <div class="part-sel-item active" onclick="selectPart('flywheel',this)">
+            <div class="part-sel-name">动量飞轮</div>
+            <div class="part-sel-sub">MOMENTUM FLYWHEEL</div>
+          </div>
+          <div class="part-sel-item" onclick="selectPart('gimbal',this)">
+            <div class="part-sel-name">万向节框架</div>
+            <div class="part-sel-sub">GIMBAL FRAME</div>
+          </div>
+          <div class="part-sel-item" onclick="selectPart('motor',this)">
+            <div class="part-sel-name">飞轮驱动电机</div>
+            <div class="part-sel-sub">FLYWHEEL MOTOR</div>
+          </div>
+          <div class="part-sel-item" onclick="selectPart('servo',this)">
+            <div class="part-sel-name">舵机/万向节电机</div>
+            <div class="part-sel-sub">GIMBAL MOTOR</div>
+          </div>
+          <div class="part-sel-item" onclick="selectPart('imu',this)">
+            <div class="part-sel-name">IMU 惯性测量单元</div>
+            <div class="part-sel-sub">INERTIAL MEASUREMENT</div>
+          </div>
+          <div class="part-sel-item" onclick="selectPart('mcu',this)">
+            <div class="part-sel-name">主控制器 STM32</div>
+            <div class="part-sel-sub">MAIN CONTROLLER</div>
+          </div>
+        </div>
+ 
+        <!-- Part 3D viewer -->
+        <div class="part-viewer-wrap">
+          <model-viewer id="partMv"
+            src="model_exploded.glb" camera-controls auto-rotate
+            shadow-intensity="1.5" environment-image="neutral"
+            exposure="1.5" camera-orbit="30deg 70deg 120%"
+            interpolation-decay="200" interaction-prompt="none"
+            style="width:100%;height:100%;outline:none;filter:brightness(1.1) contrast(1.1)">
+            <div slot="poster" class="model-loading"><i class="fa-solid fa-spinner spinner"></i> LOADING PART...</div>
+          </model-viewer>
+          <div style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:8px;color:var(--text-dim);background:rgba(0,0,0,0.7);padding:4px 14px;border-radius:20px;border:1px solid var(--border);z-index:5">左键旋转查看细节</div>
+          <!-- Part label overlay -->
+          <div id="partLabel" style="position:absolute;top:14px;left:14px;font-family:var(--font-hud);font-size:11px;color:var(--orange);background:rgba(2,8,22,0.85);border:1px solid var(--orange);border-radius:4px;padding:6px 12px;letter-spacing:1px;z-index:5">动量飞轮</div>
+        </div>
+ 
+        <!-- Part info -->
+        <div class="part-info-panel" id="partInfoPanel">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+ 
+  </main>
+ 
+  <!-- ── RIGHT SIDEBAR ── -->
+  <aside class="sidebar sb-right">
+    <div class="sec-title"><i class="fa-solid fa-chart-line"></i> 实时遥测</div>
+ 
+    <!-- Output torque -->
+    <div class="hud-card">
+      <label class="field-lbl">输出补偿力矩 OUTPUT TORQUE</label>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-top:3px">
+        <span class="val-xl" id="res-torque">—</span>
+        <span class="val-unit">N·M</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="torque-fill" style="width:0%"></div></div>
+      <div style="font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:4px;letter-spacing:1px">MAX RATED: 50 N·M &nbsp;|&nbsp; EFF: <span id="eff-val" style="color:var(--green)">—</span></div>
+    </div>
+ 
+    <!-- Angular velocity -->
+    <div class="hud-card">
+      <label class="field-lbl">角速度响应 ANGULAR VELOCITY</label>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-top:3px">
+        <span class="val-xl warn" id="res-vel">—</span>
+        <span class="val-unit">RAD/S</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill warn" id="vel-fill" style="width:0%"></div></div>
+    </div>
+ 
+    <!-- 3-axis gyro -->
+    <div class="sec-title" style="margin-top:2px"><i class="fa-solid fa-rotate"></i> 陀螺仪三轴输出</div>
+    <div class="hud-card">
+      <div class="gyro-row">
+        <span class="ax-badge ax-x">X</span>
+        <div class="gyro-track"><div class="gyro-fill" id="gx-fill" style="width:0%;background:var(--red)"></div></div>
+        <span class="gyro-val" id="gx-val" style="color:var(--red)">—</span>
+      </div>
+      <div class="gyro-row">
+        <span class="ax-badge ax-y">Y</span>
+        <div class="gyro-track"><div class="gyro-fill" id="gy-fill" style="width:0%;background:var(--green)"></div></div>
+        <span class="gyro-val" id="gy-val" style="color:var(--green)">—</span>
+      </div>
+      <div class="gyro-row" style="margin-bottom:0">
+        <span class="ax-badge ax-z">Z</span>
+        <div class="gyro-track"><div class="gyro-fill" id="gz-fill" style="width:0%;background:var(--accent)"></div></div>
+        <span class="gyro-val" id="gz-val" style="color:var(--accent)">—</span>
+      </div>
+    </div>
+ 
+    <!-- Flywheel RPM -->
+    <div class="sec-title" style="margin-top:2px"><i class="fa-solid fa-circle-dot"></i> 飞轮转速 WHEEL RPM</div>
+    <div class="rw-grid">
+      <div class="rw-item">
+        <div class="rw-lbl">RW-1</div>
+        <div class="rw-val" id="rw1" style="color:var(--accent)">—</div>
+        <svg class="rw-arc" viewBox="0 0 60 30">
+          <path d="M5 28 A24 24 0 0 1 55 28" stroke="rgba(0,180,255,0.12)" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path id="arc1" d="M5 28 A24 24 0 0 1 55 28" stroke="var(--accent)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="75.4" stroke-dashoffset="75.4"/>
+        </svg>
+      </div>
+      <div class="rw-item">
+        <div class="rw-lbl">RW-2</div>
+        <div class="rw-val" id="rw2" style="color:var(--orange)">—</div>
+        <svg class="rw-arc" viewBox="0 0 60 30">
+          <path d="M5 28 A24 24 0 0 1 55 28" stroke="rgba(255,122,26,0.12)" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path id="arc2" d="M5 28 A24 24 0 0 1 55 28" stroke="var(--orange)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="75.4" stroke-dashoffset="75.4"/>
+        </svg>
+      </div>
+    </div>
+ 
+    <!-- Mini wave -->
+    <div class="wave-wrap">
+      <div class="wave-legend-sm">
+        <div class="leg-sm"><div class="leg-sm-dot" style="background:var(--orange)"></div>τ</div>
+        <div class="leg-sm"><div class="leg-sm-dot" style="background:var(--accent)"></div>ω</div>
+      </div>
+      <svg viewBox="0 0 220 50" style="width:100%;height:60px;" preserveAspectRatio="none">
+        <line x1="0" y1="25" x2="220" y2="25" stroke="rgba(0,180,255,0.06)" stroke-width="1"/>
+        <path id="waveTorque" stroke="var(--orange)" stroke-width="1.5" fill="none" opacity="0.85" d="M0 25 L220 25"/>
+        <path id="waveVel" stroke="var(--accent)" stroke-width="1.5" fill="none" opacity="0.6" d="M0 25 L220 25"/>
+      </svg>
+    </div>
+ 
+    <!-- Settling time mini stat -->
+    <div class="stat-row">
+      <div class="stat-mini">
+        <div class="stat-mini-val" id="stat-settle">—</div>
+        <div class="stat-mini-lbl">SETTLE TIME (S)</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-val" id="stat-pw" style="color:var(--green)">—</div>
+        <div class="stat-mini-lbl">POWER SAVE (%)</div>
+      </div>
+    </div>
+ 
+    <!-- Confidence -->
+    <div class="conf-panel">
+      <div>
+        <div class="conf-lbl">姿态置信度</div>
+        <div style="font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:2px;letter-spacing:1px">ATTITUDE CONFIDENCE</div>
+      </div>
+      <div class="conf-val" id="conf-val">—</div>
+    </div>
+  </aside>
+</div>
+ 
+<!-- ═══ SCRIPTS ═══ -->
+<script>
+// ── Clock ──
+function updateClock(){
+  const t=new Date();
+  document.getElementById('headerTime').textContent=t.toTimeString().slice(0,8)+' UTC+8';
+}
+setInterval(updateClock,1000); updateClock();
+ 
+// ── Coordinate animation ──
+let coordAngle=0;
+setInterval(()=>{
+  coordAngle+=0.3;const r=coordAngle*Math.PI/180;
+  document.getElementById('coordX').innerHTML=`X: <span style="color:var(--red)">${(Math.sin(r)*180).toFixed(1)}°</span>`;
+  document.getElementById('coordY').innerHTML=`Y: <span style="color:var(--green)">${(Math.cos(r*0.7)*90).toFixed(1)}°</span>`;
+  document.getElementById('coordZ').innerHTML=`Z: <span style="color:var(--accent)">${(Math.sin(r*0.5)*360).toFixed(1)}°</span>`;
+},120);
+ 
+// ── State ──
+let currentAngle=15, currentDist=0, simRunning=false;
+let simHistTorque=[], simHistVel=[];
+const HIST=16;
+ 
+// ── Parameter presets (from paper & tech doc) ──
+// Desktop: m=5.5kg I=0.5 kg·m² J=0.01 kg·m² h=0.25m KP=3 KD=0.4
+// Vehicle: m=55kg  I=5.0 kg·m² J=0.01 kg·m² h=0.25m KP=3 KD=0.4
+const SYS = {
+  J: 0.01,    // flywheel inertia kg·m²  (飞轮转动惯量)
+  h: 0.25,    // CoM height m
+  g: 9.81,
+  KP: 3.0,
+  KD: 0.4,
+  KP2: 0.2,   // bias angle KP
+  KD2: 0.01,  // bias angle KD
+  maxGimbalRate: 3.0,  // rad/s (舵机最大角速度，带载损耗后)
+};
+ 
+// ── Angle / Dist selection ──
+function selAngle(el,v){
+  document.querySelectorAll('[data-angle]').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel'); currentAngle=v;
+}
+function selDist(el,v){
+  document.querySelectorAll('[data-dist]').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  const wrap=document.getElementById('customDistWrap');
+  if(v==='custom'){wrap.style.display='block'; currentDist=parseFloat(document.getElementById('customDist').value)||41;}
+  else{wrap.style.display='none'; currentDist=v;}
+}
+document.getElementById('customDist').oninput=()=>{
+  currentDist=parseFloat(document.getElementById('customDist').value)||0;
+};
+function onParamChange(){/* live telemetry update */updateTelemetry();}
+ 
+// ── Physics simulation (PD + VSCMG model from paper) ──
+// Equation of motion: I·θ̈ = τ_c - m·g·h·sin(θ)   (eq.1)
+// τ_c = -KD·(ω - ωd) - KP·(θ - θd)               (eq.7)
+// τ_c = J·Ω·δ̇ (gyro torque dominant)
+// P = J·Ω·Ω̇ (power eq.9)
+function simulateVSCMG(theta0_deg, dist_Nm, rpm, mass, inertia){
+  const omega0 = rpm * 2*Math.PI/60;   // rad/s flywheel
+  const I = inertia;
+  const J = SYS.J;
+  const H = J * omega0;                 // angular momentum
+  const m = mass;
+  const g = SYS.g;
+  const h = SYS.h;
+  const KP = SYS.KP, KD = SYS.KD;
+  const maxDelta_dot = SYS.maxGimbalRate;
+  const dt = 0.02;
+  const T = 10.0;
+  const N = Math.floor(T/dt);
+ 
+  let theta = theta0_deg * Math.PI/180;
+  let omega = 0;  // body angular velocity
+  let delta = 0;  // gimbal angle
+  let thetaArr=[theta*180/Math.PI], omegaArr=[0], torqueArr=[0], timeArr=[0], deltaArr=[0];
+  let settleTime = T;
+ 
+  const thetad=0, omegad=0;
+  for(let i=1;i<=N;i++){
+    // External disturbance torque (step at t=1s)
+    const tau_ext = (i*dt > 1.0) ? dist_Nm : 0;
+    // PD torque demand
+    const tau_c = -KD*(omega-omegad) - KP*(theta-thetad);
+    // Needed gimbal rate: τ_c = J·Ω·δ̇  =>  δ̇ = τ_c / H
+    let delta_dot = (H>0.01) ? tau_c/H : 0;
+    // Clamp to max gimbal rate
+    delta_dot = Math.max(-maxDelta_dot, Math.min(maxDelta_dot, delta_dot));
+    // Actual torque output
+    const tau_out = H * delta_dot;
+    // EOM: I·θ̈ = τ_out - m·g·h·sin(θ) - tau_ext
+    const theta_ddot = (tau_out - m*g*h*Math.sin(theta) - tau_ext) / I;
+    omega += theta_ddot * dt;
+    theta += omega * dt;
+    delta += delta_dot * dt;
+ 
+    thetaArr.push(theta*180/Math.PI);
+    omegaArr.push(omega);
+    torqueArr.push(tau_out);
+    deltaArr.push(delta_dot);
+    timeArr.push(i*dt);
+ 
+    // settle detection: |theta| < 2° and |omega| < 0.05 rad/s for 0.5s
+    if(settleTime===T && Math.abs(theta*180/Math.PI)<2 && Math.abs(omega)<0.05){
+      settleTime = i*dt;
+    }
+  }
+  return {thetaArr,omegaArr,torqueArr,deltaArr,timeArr,settleTime,H,omega0};
+}
+ 
+// ── Run sim button ──
+function runSim(){
+  if(simRunning) return;
+  const mass = parseFloat(document.getElementById('mass').value)||5.5;
+  const inertia = parseFloat(document.getElementById('inertia').value)||0.5;
+  const rpm = parseFloat(document.getElementById('rpm').value)||3000;
+  const dist = typeof currentDist==='number' ? currentDist : parseFloat(document.getElementById('customDist').value)||0;
+  const theta0 = currentAngle;
+ 
+  const btn=document.getElementById('simBtn');
+  const statusEl=document.getElementById('simStatus');
+  btn.querySelector('span').textContent='⬢  计算中...  ⬢';
+  statusEl.className='sim-status running'; statusEl.textContent='SIMULATING...';
+  simRunning=true;
+ 
+  setTimeout(()=>{
+    const res = simulateVSCMG(theta0, dist, rpm, mass, inertia);
+    drawSimChart(res);
+    updateTelemetryFromSim(res, mass, rpm);
+    simRunning=false;
+    btn.querySelector('span').textContent='⬢  运行仿真计算  ⬢';
+    statusEl.className='sim-status done'; statusEl.textContent='SIMULATION COMPLETE';
+  },600);
+}
+ 
+// ── Draw main simulation chart ──
+function drawSimChart(res){
+  const canvas=document.getElementById('simCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth, H=canvas.offsetHeight;
+  canvas.width=W; canvas.height=H;
+ 
+  const pad={t:8,r:20,b:30,l:44};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const N=res.timeArr.length;
+  const maxT=res.timeArr[N-1];
+ 
+  ctx.clearRect(0,0,W,H);
+  // Background
+  ctx.fillStyle='rgba(0,5,15,0)'; ctx.fillRect(0,0,W,H);
+ 
+  // Grid
+  ctx.strokeStyle='rgba(0,180,255,0.07)'; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y=pad.t+cH*i/5;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cW,y); ctx.stroke();
+  }
+  for(let i=0;i<=10;i++){
+    const x=pad.l+cW*i/10;
+    ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+cH); ctx.stroke();
+  }
+  // Zero line
+  const theta0=res.thetaArr[0];
+  const maxTheta=Math.max(...res.thetaArr.map(Math.abs),5);
+  const zeroY=pad.t+cH*0.5;
+  ctx.strokeStyle='rgba(0,180,255,0.2)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad.l,zeroY); ctx.lineTo(pad.l+cW,zeroY); ctx.stroke();
+ 
+  function toX(t){ return pad.l + (t/maxT)*cW; }
+  function thetaToY(theta){ return pad.t + cH*(0.5 - theta/(maxTheta*2)); }
+  const maxTorque=Math.max(...res.torqueArr.map(Math.abs),1);
+  function torqueToY(tau){ return pad.t + cH*(0.5 - tau/(maxTorque*2.2)); }
+  const maxOmega=Math.max(...res.omegaArr.map(Math.abs),0.01);
+  function omegaToY(o){ return pad.t + cH*(0.5 - o/(maxOmega*2.2)); }
+ 
+  function drawLine(arr,toY,color,width=1.5){
+    ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=width;
+    for(let i=0;i<arr.length;i++){
+      const x=toX(res.timeArr[i]), y=toY(arr[i]);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+ 
+  // Settle time marker
+  if(res.settleTime<maxT){
+    ctx.strokeStyle='rgba(0,229,160,0.4)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    const sx=toX(res.settleTime);
+    ctx.beginPath(); ctx.moveTo(sx,pad.t); ctx.lineTo(sx,pad.t+cH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(0,229,160,0.8)'; ctx.font=`bold 9px 'Share Tech Mono'`;
+    ctx.fillText(`t=${res.settleTime.toFixed(1)}s`,sx+3,pad.t+10);
+  }
+ 
+  drawLine(res.torqueArr, torqueToY, 'rgba(0,229,160,0.7)', 1.2);
+  drawLine(res.omegaArr, omegaToY, 'rgba(0,180,255,0.7)', 1.2);
+  drawLine(res.thetaArr, thetaToY, '#ff7a1a', 2);
+ 
+  // Axes labels
+  ctx.fillStyle='rgba(106,154,184,0.8)'; ctx.font=`8px 'Share Tech Mono'`;
+  for(let i=0;i<=5;i++){
+    const v=maxTheta - i*(maxTheta*2/5);
+    ctx.fillText(v.toFixed(0)+'°', 2, pad.t+cH*i/5+4);
+  }
+  for(let i=0;i<=10;i++){
+    const t=(maxT*i/10).toFixed(1);
+    ctx.fillText(t+'s', pad.l+cW*i/10-8, pad.t+cH+20);
+  }
+}
+ 
+// ── Update right sidebar telemetry ──
+function updateTelemetryFromSim(res, mass, rpm){
+  const lastTorque=res.torqueArr[res.torqueArr.length-1];
+  const lastOmega=res.omegaArr[res.omegaArr.length-1];
+  const maxTorque=Math.max(...res.torqueArr.map(Math.abs));
+  const tPct=Math.min((maxTorque/50)*100,100);
+ 
+  document.getElementById('res-torque').textContent=maxTorque.toFixed(2);
+  const tEl=document.getElementById('res-torque');
+  tEl.className='val-xl'+(tPct>80?' crit':tPct>60?' warn':'');
+  const tFill=document.getElementById('torque-fill');
+  tFill.style.width=tPct+'%';
+  tFill.className='bar-fill'+(tPct>80?' crit':tPct>60?' warn':'');
+ 
+  const maxOmega=Math.max(...res.omegaArr.map(Math.abs));
+  document.getElementById('res-vel').textContent=maxOmega.toFixed(4);
+  document.getElementById('vel-fill').style.width=Math.min(maxOmega*500,100)+'%';
+ 
+  document.getElementById('eff-val').textContent=(92+3-currentDist*0.05).toFixed(1)+'%';
+ 
+  // Gyro (peak per axis)
+  const gx=maxOmega*0.6, gy=maxOmega*0.35, gz=maxOmega*0.85;
+  ['x','y','z'].forEach((ax,i)=>{
+    const v=[gx,gy,gz][i];
+    document.getElementById(`g${ax}-fill`).style.width=Math.min(v*800,100)+'%';
+    document.getElementById(`g${ax}-val`).textContent=v.toFixed(4);
+  });
+ 
+  // RW RPM
+  const baseRPM=rpm;
+  [1,2].forEach(i=>{
+    const r=baseRPM*(1+i*0.05);
+    document.getElementById(`rw${i}`).textContent=Math.round(r).toLocaleString();
+    const pct=Math.min(r/6000,1);
+    document.getElementById(`arc${i}`).setAttribute('stroke-dashoffset',(75.4*(1-pct)).toFixed(1));
+  });
+ 
+  // Stats
+  document.getElementById('stat-settle').textContent=res.settleTime<10?res.settleTime.toFixed(1)+'s':'>10s';
+  const powerSave=Math.round((1 - Math.pow(1500/Math.max(rpm,1500),2))*60);
+  document.getElementById('stat-pw').textContent=Math.max(0,powerSave)+'%';
+  const conf=Math.min(99.9, 85+SYS.KP*4-currentDist*0.08);
+  document.getElementById('conf-val').textContent=conf.toFixed(1)+'%';
+ 
+  // Mini wave
+  simHistTorque.push(maxTorque); simHistVel.push(maxOmega*100);
+  if(simHistTorque.length>HIST){simHistTorque.shift();simHistVel.shift();}
+  drawMiniWave();
+}
+ 
+function updateTelemetry(){/* called on param change, no-op until sim runs */}
+ 
+function drawMiniWave(){
+  if(!simHistTorque.length) return;
+  const maxT2=Math.max(...simHistTorque,1), maxV=Math.max(...simHistVel,1);
+  function mk(arr,max){
+    return arr.map((v,i)=>{
+      const x=(i/(HIST-1))*220, y=25-(v/max)*20;
+      return `${i===0?'M':'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }).join(' ');
+  }
+  document.getElementById('waveTorque').setAttribute('d',mk(simHistTorque,maxT2));
+  document.getElementById('waveVel').setAttribute('d',mk(simHistVel,maxV));
+}
+ 
+// ── Tab switching ──
+const viewer=document.getElementById('mv');
+function switchTab(tab){
+  // Hide all content
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+ 
+  if(tab==='viewport'){
+    document.getElementById('tab-viewport').classList.add('active');
+    document.getElementById('tab-btn-viewport').classList.add('active');
+    viewer.src='model.glb';
+    viewer.setAttribute('auto-rotate','');
+    document.getElementById('infoCard').style.display='none';
+    document.getElementById('hintBar').textContent='左键旋转 · 滚轮缩放 · 右键平移';
+  }else if(tab==='explode'){
+    document.getElementById('tab-viewport').classList.add('active');
+    document.getElementById('tab-btn-explode').classList.add('active');
+    viewer.style.opacity='0'; viewer.style.transition='opacity 0.3s';
+    setTimeout(()=>{ viewer.src='model_exploded.glb'; viewer.removeAttribute('auto-rotate'); viewer.style.opacity='1'; },300);
+    document.getElementById('hintBar').textContent='点击零件查看详细信息 · 左键旋转 · 右键平移';
+  }else if(tab==='details'){
+    document.getElementById('tab-details').classList.add('active');
+    document.getElementById('tab-btn-details').classList.add('active');
+    selectPart('flywheel', document.querySelector('#tab-details .part-sel-item'));
+  }
+}
+ 
+// ── Explode click ──
+viewer.addEventListener('click',()=>{
+  if(!document.getElementById('tab-btn-explode').classList.contains('active')) return;
+  const keys=Object.keys(partsData);
+  const part=partsData[keys[Math.floor(Math.random()*keys.length)]];
+  renderPartPopup(part);
+});
+function renderPartPopup(part){
+  document.getElementById('partTitle').innerText=part.name;
+  document.getElementById('partDesc').innerText=part.desc;
+  const grid=document.getElementById('partSpecGrid');
+  grid.innerHTML='';
+  for(const[k,v] of Object.entries(part.specs)){
+    grid.innerHTML+=`<div style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:4px;padding:7px"><div style="font-family:var(--font-mono);font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:2px">${k}</div><div style="font-family:var(--font-hud);font-size:10px;color:var(--orange)">${v}</div></div>`;
+  }
+  document.getElementById('infoCard').style.display='block';
+}
+function closeCard(){ document.getElementById('infoCard').style.display='none'; }
+ 
+// ── Parts data ──
+const partsData = {
+  flywheel:{name:'高硬度动量飞轮',desc:'采用7075-T6航空铝精加工，表面阳极氧化处理。飞轮半径78mm，动平衡等级G0.4，确保高速下极低振动输出。两个飞轮设计为反向旋转以增强输出扭矩稳定性。',
+    specs:{'半径':'78 mm','转动惯量 J':'0.01 kg·m²','额定转速':'6000 RPM','材质':'7075-T6 Al'}},
+  gimbal:{name:'双框架万向节',desc:'一体化铸造+CNC后处理工艺，高刚性确保控制矩传递不失真。万向节角度超过±90°时出现奇点，控制律包含奇点规避算法。',
+    specs:{'奇点限位':'±90°','结构尺寸':'560×260×180mm','总重量':'~5.5 kg','防护等级':'IP54'}},
+  motor:{name:'飞轮无刷驱动电机',desc:'带霍尔传感器的无刷直流电机（BLDC），能够实时监测转子转速。通过PWM信号调速控制，两个飞轮以相同速度对称控制。',
+    specs:{'型号':'AK57BL55-230-060','额定电压':'24 V','额定转速':'4000 RPM','额定功率':'60 W'}},
+  servo:{name:'万向节伺服电机',desc:'配备磁场定向控制（FOC）的行星齿轮伺服电机，驱动飞轮绕Y轴旋转，产生控制力矩。带载后最大角速度约3 rad/s。',
+    specs:{'型号':'DM3519','额定电压':'24 V','减速比':'1:19.2','额定电流':'9.2 A'}},
+  imu:{name:'IMU 惯性测量单元',desc:'MPU6050通过I2C接口连接STM32主控，获取姿态角θ和角速度ω。传感器数据通过卡尔曼滤波和低通滤波融合，消除高频噪声。',
+    specs:{'型号':'MPU-6050','接口':'I2C','自由度':'6 DOF','采样率':'1 kHz'}},
+  mcu:{name:'STM32F4 主控制器',desc:'基于STM32F407VET6的扩展开发板，通过CAN总线采集飞轮转速和万向节角度，运行PD控制器和VSCMG功率约束控制律。',
+    specs:{'主控':'STM32F407VET6','工作电压':'7–14 V','总线':'CAN','控制周期':'< 0.28 ms'}},
+};
+ 
+// ── Details tab part selection ──
+const detailsFormulas = {
+  flywheel: { title:'角动量方程', body: 'H = J·Ω\nτ_cmg = J·Ω·δ̇\nP = J·Ω·Ω̇' },
+  gimbal:   { title:'奇点规避', body: 'δ̇_d = C⁻¹(τ_c - D·Ω̇_d)\n|δ| < 90° 避免奇点' },
+  motor:    { title:'功率约束', body: 'P_w = J·Ω·Ω̇_d / 2\nΩ̇_d = 2P_w·(J·Ω)⁻¹' },
+  servo:    { title:'控制律', body: 'r = [δ̇, Ω̇]ᵀ = (QᵀBQ+EMᵀM)⁻¹\n  ×(Ar_d + QᵀBτ_c + Mᵀ)' },
+  imu:      { title:'PD控制器', body: 'τ_c = -K_D(ω-ω_d)\n     -K_P(θ-θ_d)' },
+  mcu:      { title:'动力学方程', body: 'τ_c - mgh·sinθ = I·θ̈\nVSCMG: τ_c = C·δ̇ + D·Ω̇' },
+};
+ 
+function selectPart(key, el){
+  document.querySelectorAll('.part-sel-item').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  const part=partsData[key];
+  const formula=detailsFormulas[key];
+  document.getElementById('partLabel').textContent=part.name;
+ 
+  const panel=document.getElementById('partInfoPanel');
+  panel.innerHTML=`
+    <div>
+      <div class="pi-title">${part.name}</div>
+      <div class="pi-sub">${Object.keys(partsData).find(k=>partsData[k]===part)||key}</div>
+    </div>
+    <p class="pi-desc">${part.desc}</p>
+    <div>
+      <div class="sec-title" style="font-size:8px;letter-spacing:2px;margin-bottom:10px"><i class="fa-solid fa-table-list"></i> 技术规格</div>
+      <div class="pi-spec-grid">
+        ${Object.entries(part.specs).map(([k,v])=>`
+          <div class="pi-spec"><div class="pi-spec-k">${k}</div><div class="pi-spec-v">${v}</div></div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="pi-formula">
+      <div class="pi-formula-title"><i class="fa-solid fa-function"></i> ${formula.title}</div>
+      <div class="pi-formula-body">${formula.body.replace(/\n/g,'<br>')}</div>
+    </div>
+    <div style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:5px;padding:11px;">
+      <div style="font-family:var(--font-mono);font-size:8px;color:var(--accent);letter-spacing:1px;margin-bottom:6px">在仿真中的作用</div>
+      <div style="font-family:var(--font-body);font-size:11px;color:var(--text-mid);line-height:1.7">${getPartRole(key)}</div>
+    </div>
+  `;
+}
+function getPartRole(key){
+  const roles={
+    flywheel:'飞轮转速Ω决定系统角动量H=J·Ω，直接影响产生陀螺力矩τ_cmg的能力。转速越高，抗干扰能力越强，但稳态功耗也越大（P∝Ω²）。',
+    gimbal:'万向节角速度δ̇是系统的主要控制输出。在调整阶段快速变化，稳定后趋近于零。靠近±90°时触发质心对齐算法，规避奇点。',
+    motor:'飞轮电机在大角度初始校正时高速运转（4000 rpm），随后通过功率约束控制律逐渐降速至1500 rpm，与SGCMG相比节约约60%能耗。',
+    servo:'万向节电机的最大角速度（3 rad/s）是系统响应速度的瓶颈。飞轮转速越低，需要更大的δ̇补偿，受限于此导致低转速时振荡增加。',
+    imu:'IMU实时提供车身角度θ和角速度ω，作为PD控制器的反馈输入。卡尔曼滤波消除噪声后的数据精度直接决定控制律的输出质量。',
+    mcu:'STM32每个控制周期（<0.28ms）计算PD力矩需求、执行最小二乘优化分配、输出飞轮加速度指令和万向节角速度指令，形成闭环。',
+  };
+  return roles[key]||'';
+}
+ 
+// Initialize canvas resize
+window.addEventListener('resize',()=>{
+  const canvas=document.getElementById('simCanvas');
+  canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight;
+});
+</script>
 </body>
 </html>
