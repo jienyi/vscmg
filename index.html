@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>稳驰 VSCMG | 工业数字孪生控制台 V5.0</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #010409;
+            --panel: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #3b82f6;
+            --orange: #f59e0b;
+            --green: #10b981;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Source Sans Pro', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* 顶部导航 */
+        header {
+            height: 60px; padding: 0 25px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); background: rgba(1, 4, 9, 0.95); backdrop-filter: blur(20px); z-index: 100;
+        }
+
+        .nav-links { display: flex; gap: 30px; }
+        .nav-item { color: var(--text-dim); text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.3s; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { color: var(--accent); }
+
+        /* 主体布局 - 关键：固定侧边栏宽度，防止挤压 */
+        .main-container { flex: 1; display: grid; grid-template-columns: 320px 1fr 350px; overflow: hidden; }
+
+        /* 通用侧边栏样式 */
+        .sidebar { 
+            background: var(--panel); 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            overflow-y: auto; 
+            border-right: 1px solid var(--border);
+        }
+        .sidebar-right { border-right: none; border-left: 1px solid var(--border); width: 350px; }
+
+        h3 { font-size: 11px; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+        /* 3D 视窗 */
+        .viewport { position: relative; background: radial-gradient(circle at 50% 50%, #111827 0%, #000 100%); }
+        model-viewer { 
+            width: 100%; height: 100%; 
+            filter: brightness(1.2) contrast(1.2) saturate(1.1); /* 金属感强化 */
+        }
+
+        /* 浮动按钮组 */
+        .action-bar { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
+        .btn { 
+            background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border); color: #fff; padding: 8px 16px; 
+            border-radius: 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s;
+        }
+        .btn.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+
+        /* 交互输入框 */
+        .input-group { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
+        .field-label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
+        input[type="number"], input[type="range"] { 
+            width: 100%; background: #000; border: 1px solid var(--border); padding: 10px; color: #fff; border-radius: 6px; outline: none; 
+        }
+        
+        /* 实时数据卡片 */
+        .data-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 15px; border-radius: 12px; }
+        .data-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .data-label { font-size: 11px; color: var(--text-dim); }
+        .data-value { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--accent); font-weight: bold; }
+        .val-hero { font-size: 28px; font-weight: 900; color: var(--orange); display: block; margin: 5px 0; }
+
+        /* 曲线图容器 */
+        .chart-box { height: 120px; background: #000; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; overflow: hidden; }
+
+        #infoCard { position: absolute; top: 75px; left: 20px; width: 280px; background: rgba(1, 4, 9, 0.9); border: 1px solid var(--orange); border-radius: 12px; padding: 20px; backdrop-filter: blur(15px); display: none; z-index: 5; }
+
+        /* 响应式调整 */
+        @media (max-width: 1200px) {
+            .main-container { grid-template-columns: 260px 1fr 280px; }
+            .val-hero { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="font-weight: 900; font-size: 20px; letter-spacing: -0.5px;">WENCHI <span style="color:var(--accent)">VSCMG</span></div>
+        <nav class="nav-links">
+            <a class="nav-item active">模型控制台</a>
+            <a class="nav-item">详细信息</a>
+            <a class="nav-item">仿真模拟第二阶段</a>
+        </nav>
+        <div style="font-size: 11px; color: var(--green);"><i class="fa-solid fa-bolt"></i> 系统已就绪</div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <h3><i class="fa-solid fa-weight-hanging"></i> 负载与动力学</h3>
+            <div class="input-group">
+                <span class="field-label">输入负载载荷 LOAD (KG)</span>
+                <input type="number" id="massInput" value="75.0" step="0.5" oninput="updateSimulation()">
+            </div>
+
+            <div class="input-group">
+                <span class="field-label">外部干扰力矩 DISTURBANCE (N·M)</span>
+                <input type="range" id="distRange" min="0" max="150" value="45" oninput="updateSimulation()">
+                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; font-weight:bold; color:var(--accent);">
+                    <span>0</span>
+                    <span id="distVal">45 N·m</span>
+                    <span>150</span>
+                </div>
+            </div>
+
+            <button class="btn" style="width:100%; justify-content:center; background:var(--accent); margin-top:10px; font-weight:bold;" onclick="triggerPulse()">
+                <i class="fa-solid fa-play"></i> 执行瞬态仿真
+            </button>
+        </aside>
+
+        <main class="viewport">
+            <div class="action-bar">
+                <button id="btnModel" class="btn active" onclick="switchView('model')"><i class="fa-solid fa-cube"></i> 模型装配</button>
+                <button id="btnExplode" class="btn" onclick="switchView('explode')"><i class="fa-solid fa-layer-group"></i> 结构分解</button>
+            </div>
+
+            <div id="infoCard">
+                <h4 id="partTitle" style="color:var(--orange); margin-bottom:8px;">零件详情</h4>
+                <p id="partDesc" style="font-size:12px; color:var(--text-dim); line-height:1.6;"></p>
+                <div style="margin-top:15px; font-size:10px; color:var(--accent);">点击背景空白处返回</div>
+            </div>
+
+            <model-viewer 
+                id="viewer" 
+                src="model.glb" 
+                camera-controls 
+                auto-rotate 
+                shadow-intensity="2" 
+                environment-image="neutral"
+                exposure="1.4"
+                interaction-prompt="none">
+            </model-viewer>
+        </main>
+
+        <aside class="sidebar sidebar-right">
+            <h3><i class="fa-solid fa-gauge-high"></i> 姿态稳定曲线</h3>
+            <div class="chart-box">
+                <svg viewBox="0 0 200 80" width="100%" height="100%">
+                    <path id="stablePath" d="M0 40 Q 50 20 100 40 T 200 40" fill="none" stroke="#3b82f6" stroke-width="2" />
+                    <line x1="0" y1="40" x2="200" y2="40" stroke="rgba(255,255,255,0.1)" stroke-dasharray="4" />
+                </svg>
+            </div>
+
+            <h3><i class="fa-solid fa-compass"></i> 三轴陀螺仪实时数据</h3>
+            <div class="data-card">
+                <div class="data-row"><span class="data-label">X轴 倾斜角 (ROLL)</span><span class="data-value" id="gyroX">0.02°</span></div>
+                <div class="data-row"><span class="data-label">Y轴 俯仰角 (PITCH)</span><span class="data-value" id="gyroY">-0.01°</span></div>
+                <div class="data-row"><span class="data-label">Z轴 偏航角 (YAW)</span><span class="data-value" id="gyroZ">0.00°</span></div>
+            </div>
+
+            <h3><i class="fa-solid fa-microchip"></i> 核心控制器输出</h3>
+            <div class="data-card">
+                <span class="field-label">输出补偿力矩 (TORQUE)</span>
+                <span class="val-hero" id="torqueOut">12.85 <small style="font-size:12px;">N·m</small></span>
+                
+                <span class="field-label" style="margin-top:15px;">实时角速度 (VELOCITY)</span>
+                <span class="val-hero" id="velOut" style="color:var(--green);">0.012 <small style="font-size:12px;">rad/s</small></span>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const viewer = document.getElementById('viewer');
+        const infoCard = document.getElementById('infoCard');
+
+        // 切换视图逻辑
+        function switchView(mode) {
+            const isExplode = mode === 'explode';
+            viewer.src = isExplode ? "model_exploded.glb" : "model.glb";
+            document.getElementById('btnExplode').classList.toggle('active', isExplode);
+            document.getElementById('btnModel').classList.toggle('active', !isExplode);
+            if(!isExplode) infoCard.style.display = 'none';
+        }
+
+        // 仿真交互逻辑
+        function updateSimulation() {
+            const mass = parseFloat(document.getElementById('massInput').value) || 0;
+            const dist = parseInt(document.getElementById('distRange').value);
+            document.getElementById('distVal').innerText = `${dist} N·m`;
+
+            // 模拟计算公式
+            const torque = (dist * 0.28 + mass * 0.04).toFixed(2);
+            const vel = (dist * 0.0003).toFixed(4);
+
+            // 更新 UI 数字
+            document.getElementById('torqueOut').innerHTML = `${torque} <small style="font-size:12px;">N·m</small>`;
+            document.getElementById('velOut').innerHTML = `${vel} <small style="font-size:12px;">rad/s</small>`;
+            
+            // 更新三轴数据微动
+            document.getElementById('gyroX').innerText = `${(Math.random()*0.05).toFixed(2)}°`;
+            document.getElementById('gyroY').innerText = `${((Math.random()-0.5)*0.03).toFixed(2)}°`;
+
+            // 更新曲线 (模拟稳定性)
+            const amplitude = dist / 5;
+            const path = `M0 40 Q 50 ${40 - amplitude} 100 40 T 200 40`;
+            document.getElementById('stablePath').setAttribute('d', path);
+        }
+
+        function triggerPulse() {
+            const path = document.getElementById('stablePath');
+            path.style.stroke = "#f59e0b";
+            setTimeout(() => { path.style.stroke = "#3b82f6"; }, 500);
+            updateSimulation();
+        }
+
+        // 零件点击（示例数据）
+        viewer.addEventListener('click', (ev) => {
+            if (!document.getElementById('btnExplode').classList.contains('active')) return;
+            const hit = viewer.sampleRenderedPixels(ev.clientX, ev.clientY);
+            if (ev.clientX > 400 && ev.clientX < 800) { // 模拟中心区域点击
+                document.getElementById('partTitle').innerText = "VSCMG 框架组件";
+                document.getElementById('partDesc').innerText = "高强度航空铝合金结构，支撑高速旋转飞轮，集成三轴MEMS传感器，实现毫秒级姿态响应。";
+                infoCard.style.display = 'block';
+            } else {
+                infoCard.style.display = 'none';
+            }
+        });
+
+        window.onload = updateSimulation;
+    </script>
+</body>
+</html>
