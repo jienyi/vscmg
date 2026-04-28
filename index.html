@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>稳驰 VSCMG | 2026 省赛级数字孪生控制台</title>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { 
+            --bg: #030712; 
+            --panel: rgba(15, 23, 42, 0.6); 
+            --border: rgba(59, 130, 246, 0.3); 
+            --accent: #3b82f6; 
+            --cyan: #22d3ee; 
+            --orange: #fbbf24; 
+            --green: #4ade80; 
+            --text-main: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Orbitron', 'Inter', sans-serif; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            /* 科幻背景网格 */
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: center;
+        }
+
+        header { 
+            height: 70px; 
+            padding: 0 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: rgba(1, 4, 9, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.2);
+            z-index: 100;
+        }
+
+        .main-container { flex: 1; display: grid; grid-template-columns: 340px 1fr 380px; gap: 15px; padding: 15px; overflow: hidden; }
+        
+        .panel { 
+            background: var(--panel); 
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 4px; /* 硬核工业风直角/微圆 */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 装饰性角标 */
+        .panel::before { content: ""; position: absolute; top: 0; left: 0; width: 10px; height: 10px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+        .panel::after { content: ""; position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+
+        h3 { font-size: 13px; color: var(--cyan); text-transform: uppercase; letter-spacing: 2px; border-left: 3px solid var(--cyan); padding-left: 10px; margin-bottom: 5px; }
+
+        .viewport { position: relative; border: 1px solid var(--border); background: black; border-radius: 4px; overflow: hidden;}
+        model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
+
+        /* 瞬态冲击按钮 - 黄色主题强化 */
+        .btn-shock { 
+            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            color: black; 
+            border: none; 
+            padding: 18px; 
+            font-weight: 900; 
+            letter-spacing: 2px;
+            cursor: pointer;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+            transition: 0.3s;
+            margin-top: auto;
+        }
+        .btn-shock:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+        .btn-shock:active { transform: scale(0.98); }
+
+        .data-box { background: rgba(0,0,0,0.4); padding: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .val-large { font-size: 32px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); font-family: 'Courier New', monospace; }
+        .unit { font-size: 12px; color: var(--text-dim); margin-left: 5px; }
+
+        /* 相轨迹多线条容器 */
+        .chart-container { height: 180px; background: rgba(0,0,0,0.6); border: 1px solid var(--border); margin-top: 10px; position: relative; }
+        .chart-svg { width: 100%; height: 100%; }
+
+        input[type="number"] { background: #000; border: 1px solid var(--border); color: var(--cyan); padding: 10px; border-radius: 4px; width: 100%; }
+        input[type="range"] { width: 100%; accent-color: var(--cyan); }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div style="width:12px; height:12px; background:var(--cyan); box-shadow:0 0 10px var(--cyan); border-radius:50%;"></div>
+            <div style="font-weight: 900; font-size: 24px; letter-spacing:3px;">WENCHI <span style="color:var(--cyan)">SYSTEM</span></div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:10px; color:var(--cyan)">SYS STATUS: <span id="sysState">STABLE</span></div>
+            <div style="font-size:12px; font-weight: bold;">省赛演示模式 7.0.4</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="panel">
+            <h3><i class="fa-solid fa-sliders"></i> 参数设定</h3>
+            <div class="data-box">
+                <span style="font-size:10px; color:var(--cyan)">仿真等效载荷 MASS</span>
+                <input type="number" id="massInput" value="75">
+            </div>
+
+            <div class="data-box">
+                <span style="font-size:10px; color:var(--cyan)">预设冲击强度 SHOCK MAGNITUDE</span>
+                <input type="range" id="distRange" min="10" max="250" value="150" step="1" oninput="document.getElementById('distVal').innerText = this.value">
+                <div style="text-align:center; font-size:24px; font-weight:bold; color:var(--orange); margin-top:10px;"><span id="distVal">150</span> <span style="font-size:12px">N·m</span></div>
+            </div>
+
+            <button class="btn-shock" onclick="handleShock()">
+                <i class="fa-solid fa-bolt"></i> 施加瞬态冲击
+            </button>
+        </aside>
+
+        <main class="viewport">
+            <model-viewer id="viewer" src="model.glb" camera-controls auto-rotate environment-image="neutral" exposure="1.5" shadow-intensity="2"></model-viewer>
+            <div style="position:absolute; bottom:20px; right:20px; color:var(--cyan); font-size:10px; background:rgba(0,0,0,0.5); padding:5px 10px; border:1px solid var(--border);">
+                REAL-TIME RENDER: 60FPS
+            </div>
+        </main>
+
+        <aside class="panel">
+            <h3><i class="fa-solid fa-atom"></i> VSCMG 核心响应</h3>
+            <div class="data-box">
+                <div style="font-size:10px; color:var(--cyan)">峰值补偿力矩 PEAK TORQUE</div>
+                <div class="val-large" id="pTorque">0.0<span class="unit">N·m</span></div>
+            </div>
+            <div class="data-box">
+                <div style="font-size:10px; color:var(--green)">峰值框架角速度 PEAK GIMBAL RATE</div>
+                <div class="val-large" id="pGimbal" style="color:var(--green); text-shadow: 0 0 10px var(--green);">0.00<span class="unit">rad/s</span></div>
+            </div>
+
+            <h3><i class="fa-solid fa-wave-square"></i> 姿态相轨迹收敛 (多线条模式)</h3>
+            <div class="chart-container">
+                <svg class="chart-svg" id="trajectorySvg">
+                    <line x1="0" y1="90" x2="100%" y2="90" stroke="rgba(59,130,246,0.3)" stroke-dasharray="5"/>
+                </svg>
+            </div>
+            <div style="font-size:9px; color:var(--text-dim); display:flex; justify-content:space-between;">
+                <span>T-3.0s</span><span>T-1.5s</span><span>REALTIME</span>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const Physics = {
+            dt: 0.02, phi: 0, omega: 0, int_e: 0,
+            g: 9.81, h: 0.35, I: 8.5, H: 35,
+            Kp: 2600, Kd: 420, Ki: 850,
+            
+            step(mass, shock) {
+                let T_g = mass * this.g * this.h * Math.sin(this.phi);
+                let err = 0 - this.phi;
+                this.int_e = Math.max(-0.5, Math.min(0.5, this.int_e + err * this.dt));
+                let T_cmd = this.Kp * err - this.Kd * this.omega + this.Ki * this.int_e;
+                T_cmd = Math.max(-350, Math.min(350, T_cmd));
+                
+                let net = T_g + shock + T_cmd + (Math.random()-0.5)*1.2;
+                this.omega += (net/this.I) * this.dt;
+                this.phi += this.omega * this.dt;
+                return { roll: this.phi, roll_rate: this.omega, torque: -T_cmd, g_rate: -T_cmd/this.H };
+            }
+        };
+
+        let currentShock = 0, peakT = 0, peakG = 0;
+        let lineCount = 0;
+        const colors = ['#22d3ee', '#4ade80', '#fbbf24', '#a855f7', '#f472b6'];
+
+        function handleShock() {
+            currentShock = parseFloat(document.getElementById('distRange').value);
+            peakT = 0; peakG = 0;
+            lineCount++;
+            
+            // 每次冲击创建一个新的 Path 元素
+            const newPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const color = colors[lineCount % colors.length];
+            newPath.setAttribute("stroke", color);
+            newPath.setAttribute("fill", "none");
+            newPath.setAttribute("stroke-width", "2");
+            newPath.setAttribute("id", "path_" + lineCount);
+            newPath.style.opacity = "1";
+            newPath.style.transition = "opacity 5s";
+            document.getElementById('trajectorySvg').appendChild(newPath);
+            
+            // 之前的线条逐渐变淡
+            const allPaths = document.querySelectorAll('#trajectorySvg path');
+            if(allPaths.length > 5) allPaths[0].remove(); // 只保留最近5条
+            allPaths.forEach(p => { if(p.id !== "path_"+lineCount) p.style.opacity = "0.3"; });
+
+            document.getElementById('sysState').innerText = "RECOVERING...";
+            document.getElementById('sysState').style.color = "var(--orange)";
+            setTimeout(()=> {
+                document.getElementById('sysState').innerText = "STABLE";
+                document.getElementById('sysState').style.color = "var(--green)";
+            }, 1200);
+        }
+
+        const history = []; // 存储当前活动线条的数据点
+
+        setInterval(() => {
+            const m = parseFloat(document.getElementById('massInput').value) || 75;
+            let res = Physics.step(m, currentShock);
+            
+            if(Math.abs(res.torque) > peakT) peakT = Math.abs(res.torque);
+            if(Math.abs(res.g_rate) > peakG) peakG = Math.abs(res.g_rate);
+
+            document.getElementById('pTorque').innerHTML = `${peakT.toFixed(1)}<span class="unit">N·m</span>`;
+            document.getElementById('pGimbal').innerHTML = `${peakG.toFixed(2)}<span class="unit">rad/s</span>`;
+
+            // 更新相轨迹
+            history.push(res.roll);
+            if(history.length > 60) history.shift();
+
+            const currentPath = document.getElementById("path_" + lineCount);
+            if(currentPath) {
+                let d = "M ";
+                history.forEach((val, i) => {
+                    let x = (i / 59) * 380; // 对应容器宽度
+                    let y = 90 - (val * 600); // 映射 y 轴
+                    d += `${x.toFixed(1)} ${y.toFixed(1)} L `;
+                });
+                currentPath.setAttribute("d", d.slice(0, -2));
+            }
+
+            currentShock *= 0.88;
+        }, 20);
+    </script>
+</body>
+</html>
