@@ -31,16 +31,22 @@
   --glow-lg:  0 0 40px rgba(0,180,255,0.25);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{height:100%;}
 body{
   background:var(--bg);color:var(--text-main);
   height:100vh;overflow:hidden;display:flex;flex-direction:column;
   font-family:var(--font-body);
   background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,180,255,0.015) 3px);
 }
+/* Auto-scale entire UI to fit any screen width without needing browser zoom */
+#app-root{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  transform-origin:top left;
+}
 
 /* ── HEADER ── */
 header{
-  height:54px;padding:0 24px;display:flex;justify-content:space-between;align-items:center;
+  height:48px;padding:0 20px;display:flex;justify-content:space-between;align-items:center;
   border-bottom:1px solid var(--border);
   background:linear-gradient(180deg,rgba(0,20,50,0.97) 0%,rgba(3,5,13,0.97) 100%);
   backdrop-filter:blur(24px);z-index:200;position:relative;flex-shrink:0;
@@ -63,8 +69,8 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
 /* ── NAV TABS (top of viewport) ── */
 .nav-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(0,8,22,0.9);flex-shrink:0;}
 .nav-tab{
-  font-family:var(--font-hud);font-size:9px;letter-spacing:2px;
-  padding:10px 20px;cursor:pointer;border:none;background:transparent;
+  font-family:var(--font-hud);font-size:8px;letter-spacing:2px;
+  padding:8px 16px;cursor:pointer;border:none;background:transparent;
   color:var(--text-dim);border-right:1px solid var(--border);
   transition:all 0.25s;display:flex;align-items:center;gap:7px;
 }
@@ -72,31 +78,31 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
 .nav-tab.active{color:var(--accent);background:rgba(0,180,255,0.1);border-bottom:2px solid var(--accent);margin-bottom:-1px;}
 
 /* ── MAIN LAYOUT ── */
-.dashboard{flex:1;display:grid;grid-template-columns:290px 1fr 310px;overflow:hidden;}
+.dashboard{flex:1;display:grid;grid-template-columns:270px 1fr 290px;overflow:hidden;min-height:0;}
 
 /* ── SIDEBAR ── */
-.sidebar{background:var(--panel);padding:16px 15px;display:flex;flex-direction:column;gap:13px;overflow-y:auto;overflow-x:hidden;}
+.sidebar{background:var(--panel);padding:12px 13px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden;}
 .sb-left{border-right:1px solid var(--border);}
 .sb-right{border-left:1px solid var(--border);}
 .sidebar::-webkit-scrollbar{width:3px;}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-.sec-title{font-family:var(--font-hud);font-size:9px;letter-spacing:3px;color:var(--accent);
+.sec-title{font-family:var(--font-hud);font-size:8px;letter-spacing:3px;color:var(--accent);
   text-transform:uppercase;display:flex;align-items:center;gap:7px;
-  padding-bottom:9px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+  padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:1px;}
 
-.hud-card{background:rgba(0,10,30,0.6);border:1px solid var(--border);border-radius:7px;padding:14px;position:relative;overflow:hidden;}
-.hud-card::after{content:'';position:absolute;bottom:0;right:0;width:10px;height:10px;
+.hud-card{background:rgba(0,10,30,0.6);border:1px solid var(--border);border-radius:6px;padding:11px;position:relative;overflow:hidden;}
+.hud-card::after{content:'';position:absolute;bottom:0;right:0;width:8px;height:8px;
   border-right:1px solid var(--accent);border-bottom:1px solid var(--accent);opacity:0.35;}
 .hud-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity 0.4s;}
 .hud-card:hover::before{opacity:0.6;}
 
-.field-lbl{font-family:var(--font-mono);font-size:8px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.field-lbl{font-family:var(--font-mono);font-size:7.5px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:block;}
 .hud-input{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:4px;
-  padding:8px 11px;color:var(--accent);font-family:var(--font-hud);font-size:13px;outline:none;transition:border-color 0.3s,box-shadow 0.3s;}
+  padding:7px 10px;color:var(--accent);font-family:var(--font-hud);font-size:12px;outline:none;transition:border-color 0.3s,box-shadow 0.3s;}
 .hud-input:focus{border-color:var(--accent);box-shadow:var(--glow);}
-.hud-input-unit{font-family:var(--font-mono);font-size:8px;color:var(--text-dim);margin-top:4px;letter-spacing:1px;}
+.hud-input-unit{font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:3px;letter-spacing:1px;}
 
 /* disturbance options */
 .dist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px;}
@@ -122,32 +128,32 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
 .sim-btn span{position:relative;z-index:1;}
 
 /* telemetry values */
-.val-xl{font-family:var(--font-hud);font-size:26px;font-weight:900;color:var(--accent);
+.val-xl{font-family:var(--font-hud);font-size:22px;font-weight:900;color:var(--accent);
   font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 18px rgba(0,180,255,0.4);transition:color 0.4s;}
 .val-xl.warn{color:var(--orange);text-shadow:0 0 18px rgba(255,122,26,0.4);}
 .val-xl.crit{color:var(--red);text-shadow:0 0 18px rgba(255,56,96,0.4);}
-.val-unit{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);}
-.bar-track{height:4px;background:rgba(0,0,0,0.6);border-radius:2px;margin-top:10px;overflow:hidden;border:1px solid var(--border);}
+.val-unit{font-family:var(--font-mono);font-size:9px;color:var(--text-dim);}
+.bar-track{height:3px;background:rgba(0,0,0,0.6);border-radius:2px;margin-top:8px;overflow:hidden;border:1px solid var(--border);}
 .bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));
   box-shadow:0 0 7px var(--accent);transition:width 0.6s cubic-bezier(0.16,1,0.3,1);}
 .bar-fill.warn{background:linear-gradient(90deg,#cc5500,var(--orange));box-shadow:0 0 7px var(--orange);}
 .bar-fill.crit{background:linear-gradient(90deg,#880020,var(--red));box-shadow:0 0 7px var(--red);}
 
 /* gyro rows */
-.gyro-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
-.gyro-track{flex:1;height:4px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
+.gyro-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.gyro-track{flex:1;height:3px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
 .gyro-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
-.gyro-val{font-family:var(--font-hud);font-size:10px;font-variant-numeric:tabular-nums;min-width:52px;text-align:right;}
-.ax-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:2px;font-family:var(--font-hud);font-size:8px;font-weight:700;}
+.gyro-val{font-family:var(--font-hud);font-size:9px;font-variant-numeric:tabular-nums;min-width:48px;text-align:right;}
+.ax-badge{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:2px;font-family:var(--font-hud);font-size:7px;font-weight:700;}
 .ax-x{background:rgba(255,56,96,0.2);color:var(--red);}
 .ax-y{background:rgba(0,229,160,0.2);color:var(--green);}
 .ax-z{background:rgba(0,180,255,0.2);color:var(--accent);}
 
 /* stat mini grid */
-.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.stat-mini{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:5px;padding:9px 11px;}
-.stat-mini-val{font-family:var(--font-hud);font-size:14px;font-weight:700;color:var(--orange);font-variant-numeric:tabular-nums;}
-.stat-mini-lbl{font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:3px;letter-spacing:1px;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.stat-mini{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:5px;padding:7px 9px;}
+.stat-mini-val{font-family:var(--font-hud);font-size:13px;font-weight:700;color:var(--orange);font-variant-numeric:tabular-nums;}
+.stat-mini-lbl{font-family:var(--font-mono);font-size:6.5px;color:var(--text-dim);margin-top:2px;letter-spacing:1px;}
 
 /* confidence */
 .conf-panel{margin-top:auto;background:rgba(0,229,160,0.04);border:1px solid rgba(0,229,160,0.2);
@@ -204,8 +210,8 @@ model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.05) contras
    BOTTOM SECTION: 姿态仿真曲线图
 ══════════════════════════════════════ */
 .sim-panel{
-  height:210px;border-top:1px solid var(--border);background:rgba(0,5,15,0.95);
-  padding:12px 16px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;
+  height:190px;border-top:1px solid var(--border);background:rgba(0,5,15,0.95);
+  padding:10px 14px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;
 }
 .sim-panel-head{display:flex;justify-content:space-between;align-items:center;}
 .sim-panel-title{font-family:var(--font-hud);font-size:9px;letter-spacing:3px;color:var(--accent);}
@@ -288,6 +294,7 @@ model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.05) contras
 </head>
 <body>
 
+<div id="app-root">
 <!-- ═══ HEADER ═══ -->
 <header>
   <div class="logo">
@@ -391,14 +398,7 @@ model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.05) contras
           <!-- These are now just visual indicators, tab buttons handle switching -->
         </div>
 
-        <!-- Part info popup (explode mode) -->
-        <div id="infoCard" class="part-card">
-          <span class="part-card-close" onclick="closeCard()">[ 关闭 ]</span>
-          <div style="font-family:var(--font-mono);font-size:7px;color:var(--accent);letter-spacing:2px;margin-bottom:5px">COMPONENT SPEC</div>
-          <div id="partTitle" style="font-family:var(--font-hud);font-size:14px;font-weight:700;color:var(--orange);margin-bottom:9px"></div>
-          <p id="partDesc" style="font-family:var(--font-body);font-size:11px;color:var(--text-mid);line-height:1.7;"></p>
-          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:7px" id="partSpecGrid"></div>
-        </div>
+        <!-- Part info popup removed — now only in 详细信息 tab -->
 
         <model-viewer id="mv"
           src="model.glb" camera-controls auto-rotate
@@ -504,7 +504,7 @@ model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.05) contras
         <span class="val-unit">N·M</span>
       </div>
       <div class="bar-track"><div class="bar-fill" id="torque-fill" style="width:0%"></div></div>
-      <div style="font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:4px;letter-spacing:1px">MAX RATED: 50 N·M &nbsp;|&nbsp; EFF: <span id="eff-val" style="color:var(--green)">—</span></div>
+      <div style="font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:4px;letter-spacing:1px">MAX RATED: 50 N·M &nbsp;|&nbsp; 稳态效率: <span id="eff-val" style="color:var(--green)">—</span></div>
     </div>
 
     <!-- Angular velocity -->
@@ -518,27 +518,30 @@ model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.05) contras
     </div>
 
     <!-- 3-axis gyro -->
-    <div class="sec-title" style="margin-top:2px"><i class="fa-solid fa-rotate"></i> 陀螺仪三轴输出</div>
+    <div class="sec-title" style="margin-top:2px"><i class="fa-solid fa-rotate"></i> 陀螺仪三轴输出 (峰值)</div>
     <div class="hud-card">
       <div class="gyro-row">
         <span class="ax-badge ax-x">X</span>
         <div class="gyro-track"><div class="gyro-fill" id="gx-fill" style="width:0%;background:var(--red)"></div></div>
         <span class="gyro-val" id="gx-val" style="color:var(--red)">—</span>
       </div>
+      <div style="font-family:var(--font-mono);font-size:6.5px;color:var(--text-dim);margin:-3px 0 6px 20px;letter-spacing:1px">滚转 ω_body (rad/s) · 车身角速度直接测量</div>
       <div class="gyro-row">
         <span class="ax-badge ax-y">Y</span>
         <div class="gyro-track"><div class="gyro-fill" id="gy-fill" style="width:0%;background:var(--green)"></div></div>
         <span class="gyro-val" id="gy-val" style="color:var(--green)">—</span>
       </div>
+      <div style="font-family:var(--font-mono);font-size:6.5px;color:var(--text-dim);margin:-3px 0 6px 20px;letter-spacing:1px">偏航 δ̇·cos(δ) (rad/s) · 万向节进动投影</div>
       <div class="gyro-row" style="margin-bottom:0">
         <span class="ax-badge ax-z">Z</span>
         <div class="gyro-track"><div class="gyro-fill" id="gz-fill" style="width:0%;background:var(--accent)"></div></div>
         <span class="gyro-val" id="gz-val" style="color:var(--accent)">—</span>
       </div>
+      <div style="font-family:var(--font-mono);font-size:6.5px;color:var(--text-dim);margin:-3px 0 0 20px;letter-spacing:1px">俯仰 2J·Ω·sin(δ)/I (rad/s) · 陀螺进动效应</div>
     </div>
 
     <!-- Flywheel RPM -->
-    <div class="sec-title" style="margin-top:2px"><i class="fa-solid fa-circle-dot"></i> 飞轮转速 WHEEL RPM</div>
+    <div class="sec-title" style="margin-top:2px"><i class="fa-solid fa-circle-dot"></i> 飞轮稳态转速 (功率约束降速后)</div>
     <div class="rw-grid">
       <div class="rw-item">
         <div class="rw-lbl">RW-1</div>
@@ -579,7 +582,7 @@ model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.05) contras
       </div>
       <div class="stat-mini">
         <div class="stat-mini-val" id="stat-pw" style="color:var(--green)">—</div>
-        <div class="stat-mini-lbl">POWER SAVE (%)</div>
+        <div class="stat-mini-lbl">∫P_vsc / ∫P_sg 节能</div>
       </div>
     </div>
 
@@ -587,7 +590,7 @@ model-viewer{width:100%;height:100%;outline:none;filter:brightness(1.05) contras
     <div class="conf-panel">
       <div>
         <div class="conf-lbl">姿态置信度</div>
-        <div style="font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:2px;letter-spacing:1px">ATTITUDE CONFIDENCE</div>
+        <div style="font-family:var(--font-mono);font-size:7px;color:var(--text-dim);margin-top:2px;letter-spacing:1px">基于稳态角度 RMS 误差</div>
       </div>
       <div class="conf-val" id="conf-val">—</div>
     </div>
@@ -648,61 +651,197 @@ document.getElementById('customDist').oninput=()=>{
 };
 function onParamChange(){/* live telemetry update */updateTelemetry();}
 
-// ── Physics simulation (PD + VSCMG model from paper) ──
-// Equation of motion: I·θ̈ = τ_c - m·g·h·sin(θ)   (eq.1)
-// τ_c = -KD·(ω - ωd) - KP·(θ - θd)               (eq.7)
-// τ_c = J·Ω·δ̇ (gyro torque dominant)
-// P = J·Ω·Ω̇ (power eq.9)
-function simulateVSCMG(theta0_deg, dist_Nm, rpm, mass, inertia){
-  const omega0 = rpm * 2*Math.PI/60;   // rad/s flywheel
-  const I = inertia;
-  const J = SYS.J;
-  const H = J * omega0;                 // angular momentum
-  const m = mass;
-  const g = SYS.g;
-  const h = SYS.h;
-  const KP = SYS.KP, KD = SYS.KD;
-  const maxDelta_dot = SYS.maxGimbalRate;
-  const dt = 0.02;
-  const T = 10.0;
-  const N = Math.floor(T/dt);
+// ══════════════════════════════════════════════════════
+//  VSCMG PHYSICS SIMULATION ENGINE
+//  Based on: Machines 2025, 13, 459 — Kang et al.
+// ══════════════════════════════════════════════════════
+//
+//  运动方程 (论文公式1):
+//    I·θ̈ = τ_c − m·g·h·sin(θ) − τ_ext
+//
+//  PD控制律 (论文公式7):
+//    τ_c = −KP·(θ−θd) − KD·(ω−ωd)
+//
+//  陀螺力矩 (论文公式6):
+//    τ_cmg = J·Ω·δ̇        (万向节进动产生)
+//    δ̇ = τ_c / H,  H = J·Ω
+//
+//  飞轮功率 (论文公式9):
+//    P = J·Ω·Ω̇
+//
+//  IMU三轴模型 (基于双飞轮反向旋转构型, 论文图1b):
+//    X轴 (滚转): 直接测量车身角速度 ω_body
+//    Y轴 (进动): 万向节转动引起的角速度分量 δ̇·cos(δ)
+//    Z轴 (自旋): 两飞轮反向旋转合成陀螺效应 (H/I_body)·sin(δ)
+//
+//  VSCMG vs SGCMG 节能模型 (论文图9):
+//    SGCMG: 飞轮始终维持初始转速 Ω₀，P_sg = J·Ω₀·|δ̇|
+//    VSCMG: 稳定后按功率约束 Pw 降速，P_vs = J·Ω(t)·|δ̇(t)|
+//    节能 = 1 − ∫P_vs dt / ∫P_sg dt
+//
+// ══════════════════════════════════════════════════════
 
-  let theta = theta0_deg * Math.PI/180;
-  let omega = 0;  // body angular velocity
-  let delta = 0;  // gimbal angle
-  let thetaArr=[theta*180/Math.PI], omegaArr=[0], torqueArr=[0], timeArr=[0], deltaArr=[0];
+function simulateVSCMG(theta0_deg, dist_Nm, rpm, mass, inertia){
+  const J         = SYS.J;           // 飞轮转动惯量 0.01 kg·m²
+  const m         = mass;
+  const I         = inertia;         // 系统转动惯量
+  const g         = SYS.g;
+  const h         = SYS.h;           // 质心高度 0.25 m
+  const KP        = SYS.KP;
+  const KD        = SYS.KD;
+  const maxDdot   = SYS.maxGimbalRate; // 万向节最大角速度 3 rad/s
+  const dt        = 0.02;            // 积分步长 20ms (50Hz)
+  const T         = 10.0;            // 仿真总时长
+  const N         = Math.floor(T/dt);
+
+  // 功率约束参数 (论文公式10-11)
+  // VSCMG稳定后以 Pw = -200 W 约束降速 (对应论文实验设定)
+  const Pw        = -200;            // 功率约束因子 W (负值=降速)
+  const Omega_min = 1500*2*Math.PI/60; // 最低转速限制 1500rpm → rad/s
+
+  // 初始飞轮角速度
+  let Omega1      = rpm * 2*Math.PI/60; // 飞轮1 (正转)
+  let Omega2      = -rpm * 2*Math.PI/60;// 飞轮2 (反转，论文图1b)
+
+  // 初始状态
+  let theta  = theta0_deg * Math.PI/180;
+  let omega  = 0.0;   // 车身角速度 rad/s
+  let delta  = 0.0;   // 万向节角度 rad (两飞轮对称，取平均)
+
+  // 输出数组
+  const thetaArr=[], omegaArr=[], torqueArr=[], deltaArr=[];
+  const timeArr=[], Omega1Arr=[], powerVscArr=[], powerSgArr=[];
+  // 三轴陀螺数组
+  const gyroXArr=[], gyroYArr=[], gyroZArr=[];
+
   let settleTime = T;
+  let energyVsc  = 0;  // VSCMG累计能量 J
+  let energySg   = 0;  // SGCMG累计能量 J (对照组，恒转速)
 
   const thetad=0, omegad=0;
-  for(let i=1;i<=N;i++){
-    // External disturbance torque (step at t=1s)
-    const tau_ext = (i*dt > 1.0) ? dist_Nm : 0;
-    // PD torque demand
-    const tau_c = -KD*(omega-omegad) - KP*(theta-thetad);
-    // Needed gimbal rate: τ_c = J·Ω·δ̇  =>  δ̇ = τ_c / H
-    let delta_dot = (H>0.01) ? tau_c/H : 0;
-    // Clamp to max gimbal rate
-    delta_dot = Math.max(-maxDelta_dot, Math.min(maxDelta_dot, delta_dot));
-    // Actual torque output
-    const tau_out = H * delta_dot;
-    // EOM: I·θ̈ = τ_out - m·g·h·sin(θ) - tau_ext
+
+  for(let i=0;i<=N;i++){
+    const t = i*dt;
+
+    // ── 外部干扰力矩 (t=1s时阶跃施加) ──
+    const tau_ext = (t > 1.0) ? dist_Nm : 0;
+
+    // ── PD控制律 (论文公式7) ──
+    const tau_c = -KD*(omega - omegad) - KP*(theta - thetad);
+
+    // ── 角动量 H = J·Ω (两飞轮反向，合成角动量沿Y轴) ──
+    // 论文公式2: H = -J·Ω₁·sin(δ₁) + J·Ω₂·sin(δ₂)
+    // 简化单轴：H_eff = J·|Ω₁|  (两轮对称时)
+    const H_eff = J * Math.abs(Omega1);
+
+    // ── 万向节角速度 (论文公式12) ──
+    // δ̇_d = C⁻¹·(τ_c − D·Ω̇_d)，简化为 δ̇ = τ_c / H
+    let delta_dot = (H_eff > 1e-4) ? tau_c / H_eff : 0;
+    delta_dot = Math.max(-maxDdot, Math.min(maxDdot, delta_dot)); // 限幅
+
+    // ── 实际输出陀螺力矩 ──
+    const tau_out = H_eff * delta_dot;
+
+    // ── 运动方程积分 (论文公式1, 欧拉前向) ──
     const theta_ddot = (tau_out - m*g*h*Math.sin(theta) - tau_ext) / I;
     omega += theta_ddot * dt;
     theta += omega * dt;
     delta += delta_dot * dt;
 
+    // ══════════════════════════════════════
+    //  飞轮转速演化 (VSCMG功率约束, 论文公式10-11)
+    //  Ω̇_d = 2·Pw / (J·Ω)  (公式11)
+    //  只在已稳定(|θ|<5°)后才开始降速，模拟论文实验策略
+    // ══════════════════════════════════════
+    let Omega_dot1 = 0;
+    if(t > 0.5 && Math.abs(theta*180/Math.PI) < 5.0 && Math.abs(Omega1) > Omega_min){
+      // 公式11: Ω̇_d = 2·Pw·(J·Ω)⁻¹
+      Omega_dot1 = 2 * Pw / (J * Math.abs(Omega1));
+      // 防止降到最低转速以下
+      const nextO = Math.abs(Omega1) + Omega_dot1 * dt;
+      if(nextO < Omega_min) Omega_dot1 = (Omega_min - Math.abs(Omega1)) / dt;
+    }
+    Omega1 += Omega_dot1 * dt;
+    Omega2 -= Omega_dot1 * dt; // 反向飞轮对称
+
+    // ══════════════════════════════════════
+    //  功率计算 (论文公式9): P = J·Ω·Ω̇
+    //  VSCMG实时功率：飞轮电机 + 万向节电机
+    // ══════════════════════════════════════
+    // 飞轮电机功率 (两个飞轮)
+    const P_flywheel_vsc = 2 * Math.abs(J * Omega1 * Omega_dot1);
+    // 万向节电机功率: P_gimbal = τ_cmg · δ̇ (力矩×角速度)
+    const P_gimbal_vsc   = Math.abs(tau_out * delta_dot);
+    const P_vsc_total    = P_flywheel_vsc + P_gimbal_vsc;
+
+    // SGCMG对照组：飞轮恒转速(Ω̇=0)，只有万向节功率
+    // SGCMG角动量更大（始终保持初始转速），δ̇更小
+    const H_sg   = J * (rpm * 2*Math.PI/60);  // SGCMG恒定角动量
+    const ddot_sg= (H_sg > 1e-4) ? tau_c / H_sg : 0;
+    const ddot_sg_clamped = Math.max(-maxDdot, Math.min(maxDdot, ddot_sg));
+    const P_sg_total = Math.abs(H_sg * ddot_sg_clamped * ddot_sg_clamped) +
+                       Math.abs(tau_out * Math.abs(ddot_sg_clamped));
+
+    energyVsc += P_vsc_total * dt;
+    energySg  += P_sg_total  * dt;
+
+    // ══════════════════════════════════════
+    //  三轴陀螺仪物理模型
+    //  基于论文双飞轮反向旋转构型 (图1b)
+    //  IMU安装在框架质心，测量三轴角速度
+    // ══════════════════════════════════════
+
+    // X轴 (滚转轴): 直接就是车身倾斜角速度 ω_body
+    // IMU随车身运动，X轴传感器直接读出
+    const gyro_x = omega;  // rad/s, 这是仿真的真实输出量
+
+    // Y轴 (偏航轴/万向节轴): 万向节转动产生
+    // 万向节绕Y轴旋转 δ̇，投影到IMU坐标系
+    // 当 δ≠0 时有耦合: ω_y = δ̇·cos(delta) (几何投影)
+    const gyro_y = delta_dot * Math.cos(delta);
+
+    // Z轴 (俯仰轴): 陀螺进动效应
+    // 两个反向飞轮产生净角动量沿Z方向的分量
+    // H_z = J·Ω₁·sin(δ) − J·Ω₂·sin(δ) = 2·J·|Ω|·sin(δ) (论文公式2)
+    // 进动角速度: ω_z = H_z / I_body = 2·J·|Ω|·sin(δ) / I
+    const gyro_z = (2 * J * Math.abs(Omega1) * Math.sin(delta)) / I;
+
+    // 记录数据
     thetaArr.push(theta*180/Math.PI);
     omegaArr.push(omega);
     torqueArr.push(tau_out);
     deltaArr.push(delta_dot);
-    timeArr.push(i*dt);
+    timeArr.push(t);
+    Omega1Arr.push(Math.abs(Omega1) * 60/(2*Math.PI)); // 转换回 rpm 显示
+    powerVscArr.push(P_vsc_total);
+    powerSgArr.push(P_sg_total);
+    gyroXArr.push(gyro_x);
+    gyroYArr.push(gyro_y);
+    gyroZArr.push(gyro_z);
 
-    // settle detection: |theta| < 2° and |omega| < 0.05 rad/s for 0.5s
+    // 稳定判据: |θ|<2° 且 |ω|<0.05 rad/s
     if(settleTime===T && Math.abs(theta*180/Math.PI)<2 && Math.abs(omega)<0.05){
-      settleTime = i*dt;
+      settleTime = t;
     }
   }
-  return {thetaArr,omegaArr,torqueArr,deltaArr,timeArr,settleTime,H,omega0};
+
+  // ── 节能统计 ──
+  // 防止除零
+  const powerSaveRatio = (energySg > 1e-6)
+    ? Math.max(0, Math.min(99, (1 - energyVsc/energySg)*100))
+    : 0;
+
+  // 稳态飞轮转速 (最后0.5s平均)
+  const steadyRpm = Omega1Arr.slice(-25).reduce((a,b)=>a+b,0)/25;
+
+  return {
+    thetaArr, omegaArr, torqueArr, deltaArr,
+    timeArr, Omega1Arr, powerVscArr, powerSgArr,
+    gyroXArr, gyroYArr, gyroZArr,
+    settleTime, powerSaveRatio, steadyRpm,
+    H_init: J * (rpm*2*Math.PI/60),
+    energyVsc, energySg
+  };
 }
 
 // ── Run sim button ──
@@ -805,52 +944,95 @@ function drawSimChart(res){
   }
 }
 
-// ── Update right sidebar telemetry ──
+// ── Update right sidebar telemetry from physics simulation results ──
 function updateTelemetryFromSim(res, mass, rpm){
-  const lastTorque=res.torqueArr[res.torqueArr.length-1];
-  const lastOmega=res.omegaArr[res.omegaArr.length-1];
-  const maxTorque=Math.max(...res.torqueArr.map(Math.abs));
-  const tPct=Math.min((maxTorque/50)*100,100);
 
-  document.getElementById('res-torque').textContent=maxTorque.toFixed(2);
-  const tEl=document.getElementById('res-torque');
-  tEl.className='val-xl'+(tPct>80?' crit':tPct>60?' warn':'');
-  const tFill=document.getElementById('torque-fill');
-  tFill.style.width=tPct+'%';
-  tFill.className='bar-fill'+(tPct>80?' crit':tPct>60?' warn':'');
+  // ── 输出补偿力矩 (仿真直接输出) ──
+  const maxTorque = Math.max(...res.torqueArr.map(Math.abs));
+  const tPct = Math.min((maxTorque/50)*100, 100);
+  const tEl = document.getElementById('res-torque');
+  tEl.textContent = maxTorque.toFixed(2);
+  tEl.className = 'val-xl'+(tPct>80?' crit':tPct>60?' warn':'');
+  const tFill = document.getElementById('torque-fill');
+  tFill.style.width = tPct+'%';
+  tFill.className = 'bar-fill'+(tPct>80?' crit':tPct>60?' warn':'');
 
-  const maxOmega=Math.max(...res.omegaArr.map(Math.abs));
-  document.getElementById('res-vel').textContent=maxOmega.toFixed(4);
-  document.getElementById('vel-fill').style.width=Math.min(maxOmega*500,100)+'%';
+  // ── 角速度响应 (仿真直接输出) ──
+  const maxOmega = Math.max(...res.omegaArr.map(Math.abs));
+  document.getElementById('res-vel').textContent = maxOmega.toFixed(4);
+  document.getElementById('vel-fill').style.width = Math.min(maxOmega*500,100)+'%';
 
-  document.getElementById('eff-val').textContent=(92+3-currentDist*0.05).toFixed(1)+'%';
+  // ── 系统效率 (基于真实功率积分) ──
+  // 稳态时 VSCMG 平均功率 / 额定功率
+  const steadyPowerVsc = res.powerVscArr.slice(-50).reduce((a,b)=>a+b,0)/50;
+  const ratedPower = 120; // 两个飞轮电机额定功率合计 2×60W
+  const eff = Math.max(0, Math.min(99.9, (1 - steadyPowerVsc/ratedPower)*100));
+  document.getElementById('eff-val').textContent = eff.toFixed(1)+'%';
 
-  // Gyro (peak per axis)
-  const gx=maxOmega*0.6, gy=maxOmega*0.35, gz=maxOmega*0.85;
-  ['x','y','z'].forEach((ax,i)=>{
-    const v=[gx,gy,gz][i];
-    document.getElementById(`g${ax}-fill`).style.width=Math.min(v*800,100)+'%';
-    document.getElementById(`g${ax}-val`).textContent=v.toFixed(4);
-  });
+  // ══════════════════════════════════════
+  //  三轴陀螺仪 — 基于真实物理模型
+  //  X: 车身角速度 ω_body (滚转轴)
+  //  Y: 万向节进动 δ̇·cos(δ) (偏航轴)
+  //  Z: 陀螺效应 2·J·|Ω|·sin(δ)/I (俯仰轴)
+  // ══════════════════════════════════════
+  // 取仿真过程中各轴的峰值（最大响应点）用于显示
+  const peakGX = Math.max(...res.gyroXArr.map(Math.abs));
+  const peakGY = Math.max(...res.gyroYArr.map(Math.abs));
+  const peakGZ = Math.max(...res.gyroZArr.map(Math.abs));
+  // 稳态值（最后0.5s均值，代表稳定后的噪声水平）
+  const steadyGX = res.gyroXArr.slice(-25).reduce((a,b)=>a+Math.abs(b),0)/25;
+  const steadyGY = res.gyroYArr.slice(-25).reduce((a,b)=>a+Math.abs(b),0)/25;
+  const steadyGZ = res.gyroZArr.slice(-25).reduce((a,b)=>a+Math.abs(b),0)/25;
 
-  // RW RPM
-  const baseRPM=rpm;
-  [1,2].forEach(i=>{
-    const r=baseRPM*(1+i*0.05);
-    document.getElementById(`rw${i}`).textContent=Math.round(r).toLocaleString();
-    const pct=Math.min(r/6000,1);
-    document.getElementById(`arc${i}`).setAttribute('stroke-dashoffset',(75.4*(1-pct)).toFixed(1));
-  });
+  // 显示峰值（体现最大扰动响应）
+  const maxG = Math.max(peakGX, peakGY, peakGZ, 0.001);
+  document.getElementById('gx-fill').style.width = Math.min((peakGX/maxG)*100,100)+'%';
+  document.getElementById('gy-fill').style.width = Math.min((peakGY/maxG)*100,100)+'%';
+  document.getElementById('gz-fill').style.width = Math.min((peakGZ/maxG)*100,100)+'%';
+  document.getElementById('gx-val').textContent = peakGX.toFixed(4);
+  document.getElementById('gy-val').textContent = peakGY.toFixed(4);
+  document.getElementById('gz-val').textContent = peakGZ.toFixed(4);
 
-  // Stats
-  document.getElementById('stat-settle').textContent=res.settleTime<10?res.settleTime.toFixed(1)+'s':'>10s';
-  const powerSave=Math.round((1 - Math.pow(1500/Math.max(rpm,1500),2))*60);
-  document.getElementById('stat-pw').textContent=Math.max(0,powerSave)+'%';
-  const conf=Math.min(99.9, 85+SYS.KP*4-currentDist*0.08);
-  document.getElementById('conf-val').textContent=conf.toFixed(1)+'%';
+  // ══════════════════════════════════════
+  //  飞轮转速 — 基于VSCMG功率约束降速模型
+  //  RW-1: 正转飞轮实时转速 (从初始rpm降到稳态)
+  //  RW-2: 反转飞轮 (对称，绝对值相同)
+  // ══════════════════════════════════════
+  // 稳态转速（仿真最后0.5s平均值）
+  const steadyRpm1 = res.steadyRpm;
+  const steadyRpm2 = res.steadyRpm; // 反向飞轮转速相同（对称控制）
+  document.getElementById('rw1').textContent = Math.round(steadyRpm1).toLocaleString();
+  document.getElementById('rw2').textContent = Math.round(steadyRpm2).toLocaleString();
+  // 圆弧进度：相对于初始转速的比例
+  const pct1 = Math.min(steadyRpm1/rpm, 1);
+  const pct2 = Math.min(steadyRpm2/rpm, 1);
+  document.getElementById('arc1').setAttribute('stroke-dashoffset',(75.4*(1-pct1)).toFixed(1));
+  document.getElementById('arc2').setAttribute('stroke-dashoffset',(75.4*(1-pct2)).toFixed(1));
 
-  // Mini wave
-  simHistTorque.push(maxTorque); simHistVel.push(maxOmega*100);
+  // ── 稳定时间 ──
+  document.getElementById('stat-settle').textContent =
+    res.settleTime < 10 ? res.settleTime.toFixed(1)+'s' : '>10s';
+
+  // ══════════════════════════════════════
+  //  节能百分比 — 基于完整功率积分对比
+  //  POWER SAVE = 1 − ∫P_vsc dt / ∫P_sg dt
+  //  P_vsc: VSCMG实时功率（飞轮降速后）
+  //  P_sg:  SGCMG恒转速功率（对照组）
+  //  论文实验结果：约节省60%（4000→1500rpm时）
+  // ══════════════════════════════════════
+  document.getElementById('stat-pw').textContent = res.powerSaveRatio.toFixed(1)+'%';
+
+  // ── 姿态置信度 — 基于稳态角度误差 ──
+  // 稳态最后0.5s的角度均方根误差
+  const steadyTheta = res.thetaArr.slice(-25);
+  const rmsTheta = Math.sqrt(steadyTheta.reduce((s,v)=>s+v*v,0)/steadyTheta.length);
+  // 误差越小，置信度越高；限制在60%-99.9%之间
+  const conf = Math.max(60, Math.min(99.9, 99.9 - rmsTheta*8));
+  document.getElementById('conf-val').textContent = conf.toFixed(1)+'%';
+
+  // ── 状态轨迹小波形（记录每次仿真的峰值，对比多次调参趋势）──
+  simHistTorque.push(maxTorque);
+  simHistVel.push(maxOmega*100);
   if(simHistTorque.length>HIST){simHistTorque.shift();simHistVel.shift();}
   drawMiniWave();
 }
@@ -882,14 +1064,13 @@ function switchTab(tab){
     document.getElementById('tab-btn-viewport').classList.add('active');
     viewer.src='model.glb';
     viewer.setAttribute('auto-rotate','');
-    document.getElementById('infoCard').style.display='none';
     document.getElementById('hintBar').textContent='左键旋转 · 滚轮缩放 · 右键平移';
   }else if(tab==='explode'){
     document.getElementById('tab-viewport').classList.add('active');
     document.getElementById('tab-btn-explode').classList.add('active');
     viewer.style.opacity='0'; viewer.style.transition='opacity 0.3s';
     setTimeout(()=>{ viewer.src='model_exploded.glb'; viewer.removeAttribute('auto-rotate'); viewer.style.opacity='1'; },300);
-    document.getElementById('hintBar').textContent='点击零件查看详细信息 · 左键旋转 · 右键平移';
+    document.getElementById('hintBar').textContent='左键旋转 · 右键平移 · 零件详细信息请切换到「详细信息」标签';
   }else if(tab==='details'){
     document.getElementById('tab-details').classList.add('active');
     document.getElementById('tab-btn-details').classList.add('active');
@@ -897,24 +1078,12 @@ function switchTab(tab){
   }
 }
 
-// ── Explode click ──
+// ── Explode click — no popup, info only in details tab ──
 viewer.addEventListener('click',()=>{
-  if(!document.getElementById('tab-btn-explode').classList.contains('active')) return;
-  const keys=Object.keys(partsData);
-  const part=partsData[keys[Math.floor(Math.random()*keys.length)]];
-  renderPartPopup(part);
+  // intentionally empty — part info shown only in 详细信息 tab
 });
-function renderPartPopup(part){
-  document.getElementById('partTitle').innerText=part.name;
-  document.getElementById('partDesc').innerText=part.desc;
-  const grid=document.getElementById('partSpecGrid');
-  grid.innerHTML='';
-  for(const[k,v] of Object.entries(part.specs)){
-    grid.innerHTML+=`<div style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:4px;padding:7px"><div style="font-family:var(--font-mono);font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:2px">${k}</div><div style="font-family:var(--font-hud);font-size:10px;color:var(--orange)">${v}</div></div>`;
-  }
-  document.getElementById('infoCard').style.display='block';
-}
-function closeCard(){ document.getElementById('infoCard').style.display='none'; }
+function renderPartPopup(part){ /* unused */ }
+function closeCard(){ /* unused */ }
 
 // ── Parts data ──
 const partsData = {
@@ -990,7 +1159,20 @@ function getPartRole(key){
 window.addEventListener('resize',()=>{
   const canvas=document.getElementById('simCanvas');
   canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight;
+  scaleApp();
 });
+
+// ── Auto-scale to fit screen ──
+function scaleApp(){
+  const root = document.getElementById('app-root');
+  const DESIGN_W = 1440;
+  const scale = Math.min(window.innerWidth / DESIGN_W, 1); // only scale down, never up
+  root.style.transform = `scale(${scale})`;
+  root.style.width = (window.innerWidth / scale) + 'px';
+  root.style.height = (window.innerHeight / scale) + 'px';
+}
+scaleApp();
 </script>
+</div><!-- /#app-root -->
 </body>
 </html>
